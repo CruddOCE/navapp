@@ -1,5 +1,7 @@
 # navapp (placeholder name)
 
+Progress by slice (built, awaiting testing, bugs, planned): https://github.com/users/CruddOCE/projects/1
+
 A Waze-style navigation app. Current build: map, place search, a drawn route, turn-by-turn guidance with voice prompts, and an Android debug build for testing on a phone. Crowd reports, Android Auto and public-release work come in later phases (see `HANDOFF.md`).
 
 ## Run it in a browser
