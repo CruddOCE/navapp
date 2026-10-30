@@ -12,6 +12,9 @@
 - The bottom bar shows the distance left ("12.1 km left") instead of the total route length.
 - Distance to the next turn is measured along the road, not as a straight line.
 
+### Known issues
+- The 0.01 report button crash did not reproduce in five tap-out cycles on the phone. The report sheet and the report card still do not close when you tap the map.
+
 ## 0.01 (2026-10-29)
 
 First test build. Debug APK for personal testing; not a public release.

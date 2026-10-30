@@ -1,6 +1,6 @@
 # Issue 4a: App installs and opens on the phone
 
-Status: Built, awaiting test
+Status: Tested and confirmed
 Phase: 4 (Capacitor shell)
 
 Done when: The debug APK installs over Wi-Fi debugging and opens to the map.
@@ -14,3 +14,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test. BUILD-PLAN.md records the install; open-to-map on the phone is not separately recorded.
+- 2026-10-30: Confirmed. `npm run android:install` installed the rebuilt APK over Wi-Fi adb (package updated 15:24) and launched it. Earlier the same day the app opened, showed the map and position dot, and ran a search and a route on the phone.
