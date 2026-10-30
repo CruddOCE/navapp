@@ -39,7 +39,24 @@ NAV_API_BASE=http://<PC-IP>:8090 npm run android:build
 
 Replace `<PC-IP>` with your PC's Wi-Fi address. The build writes it into `web/js/config.js`, bundles the APK, then restores the file. The APK lands at `dist/navapp-debug.apk`.
 
-The address is baked into the APK. If the PC's address changes, rebuild.
+The address is baked into the APK at build time, so the phone keeps using whatever address the APK was built with, even after the PC's address changes. The phone then shows "Waiting for your location" or search fails.
+
+When the PC's Wi-Fi address changes:
+
+1. Find the new address with `ipconfig`. Use the "Wireless LAN adapter Wi-Fi" IPv4 line.
+2. Rebuild the APK with the new address:
+
+   ```bash
+   NAV_API_BASE=http://<new-PC-IP>:8090 npm run android:build
+   ```
+
+3. Install it on the phone (wireless debugging must be connected first, see above):
+
+   ```bash
+   npm run android:install
+   ```
+
+The build script writes the address into `web/js/config.js` only while it runs, then restores the file. Nothing in the repo keeps the address.
 
 ### Install over Wi-Fi debugging
 

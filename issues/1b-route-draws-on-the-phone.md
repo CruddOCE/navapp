@@ -14,3 +14,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test. BUILD-PLAN.md says "tested on phone"; HANDOFF.md says the phone was not verified. Recorded as not verified, per owner.
+- 2026-10-30: Partly confirmed on the phone. Picking Fremantle drew a blue route line from the phone's position to Fremantle: 105 min, 130.4 km. The line starts where the phone's position dot sits and ends at the destination, so the drawing works. But the position dot was in Boddington, about 130 km from the real location, so the route is wrong in distance. The phone's fix came from a coarse location indoors. Start was not pressed. Left as Built, awaiting test until a fix from outdoors puts the dot in Perth.

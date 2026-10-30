@@ -14,3 +14,5 @@ Steps:
 ## Status log
 
 - 2026-10-29: To come. CHANGELOG.md lists this crash as under investigation.
+- 2026-10-30: Browser attempt (desktop Chrome in the preview pane, not the phone): open the ! sheet, tap the map outside it, no JavaScript error and no crash. The sheet stays open, because only Cancel closes it. Phone repro still needed: the phone was not connected over adb, so there is no logcat yet.
+- 2026-10-30: Phone repro, Android 16 on the phone over Wi-Fi adb. Opened the ! sheet and tapped the map outside it five times. The app stayed in front, with no FATAL or AndroidRuntime lines in logcat, so the crash did not reproduce. Logcat showed `E/Capacitor/Console: Line 330 - Msg: [object Object]` several times. Nothing in web/js calls console, so the source is a library or the WebView, not yet identified. The sheet stays open after the tap-out, the same as the browser run. The slice stays Built, awaiting test until the crash is reproduced or the tap-out sequence is confirmed fixed.
