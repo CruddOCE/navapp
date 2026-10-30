@@ -32,6 +32,8 @@ Update a file's `Status:` line and add a log entry in the same commit as the cha
 | 4c | Document the rebuild when the PC's Wi-Fi IP changes | Tested and confirmed | [4c-document-the-rebuild-when-the-pc-s-wi-fi-ip-changes.md](4c-document-the-rebuild-when-the-pc-s-wi-fi-ip-changes.md) |
 | 4a-1 | Route shows on the car screen | Built, awaiting test | [4a-1-route-shows-on-the-car-screen.md](4a-1-route-shows-on-the-car-screen.md) |
 | 4a-2 | Host check allows all hosts only in debug builds | Blocked, needs approval | [4a-2-host-check-allows-all-hosts-only-in-debug-builds.md](4a-2-host-check-allows-all-hosts-only-in-debug-builds.md) |
+| N1 | Works without the PC | Built, awaiting test | [n1-works-without-the-pc.md](n1-works-without-the-pc.md) |
+| N2 | Navigation keeps working with the phone locked | Built, awaiting test | [n2-navigation-with-the-phone-locked.md](n2-navigation-with-the-phone-locked.md) |
 | R1 | HTTPS API instead of the Wi-Fi IP | To come | [r1-https-api-instead-of-the-wi-fi-ip.md](r1-https-api-instead-of-the-wi-fi-ip.md) |
 | R2 | Self-hosted routing and geocoding (OSRM and Nominatim) | To come | [r2-self-hosted-routing-and-geocoding-osrm-and-nominatim.md](r2-self-hosted-routing-and-geocoding-osrm-and-nominatim.md) |
 | R3 | Google's Android Auto review | To come | [r3-google-s-android-auto-review.md](r3-google-s-android-auto-review.md) |
