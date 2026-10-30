@@ -14,3 +14,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test.
+- 2026-10-30: Voice now tracks each turn by its instruction and position, not its step number, so after a reroute a new turn gets its full prompts and the same turn is not repeated. Distance to the turn is now measured along the road. Every OSRM manoeuvre type now has its own wording (fork, merge, ramps, end of road, roundabout exit number) instead of "Continue on". Road test still to do.

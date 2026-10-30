@@ -6,15 +6,24 @@ const PROMPT_DISTANCES_M = [400, 100, 20];
 
 function createVoice(options) {
   const speak = options && options.speak ? options.speak : defaultSpeak;
-  let stepIndex = -1;
+  let stepKey = null;
   let spoken = new Set();
+
+  // A turn is known by its instruction and position, not its step number.
+  // A reroute restarts the numbering, so a new turn can share the old number,
+  // and the same turn after a reroute can get a new one.
+  function keyFor(state) {
+    const loc = state.stepLocation;
+    return loc ? `${state.instruction}@${loc.lat},${loc.lng}` : `#${state.stepIndex}`;
+  }
 
   // Called with each navigator update. Speaks at most one prompt per call,
   // the closest threshold the device has crossed, so a jump past several
   // thresholds does not read out a stack of stale prompts.
   function onUpdate(state) {
-    if (state.stepIndex !== stepIndex) {
-      stepIndex = state.stepIndex;
+    const key = keyFor(state);
+    if (key !== stepKey) {
+      stepKey = key;
       spoken = new Set();
     }
     if (state.arrived) {

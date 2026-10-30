@@ -14,3 +14,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test.
+- 2026-10-30: Rerouting itself is unchanged. After a reroute, the new route's turns now get their full voice prompts (see 2c). Road test still to do.

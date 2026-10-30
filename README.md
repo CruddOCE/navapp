@@ -90,9 +90,9 @@ Build-side: `NAV_API_BASE` (see above).
 
 - `server/index.js`: Express app. Serves `web/`, plus `/api/geocode` and `/api/route`.
 - `server/src/geocode.js`: place search proxy with a cache and a one-request-per-second limit.
-- `server/src/routing.js`: OSRM wrapper. Converts OSRM's `[lng, lat]` into `{lat, lng}` and builds the instruction text.
-- `web/js/nav.js`: navigator. Tracks the current step, distance to the next turn and off-route state. No network, no timers.
-- `web/js/voice.js`: spoken prompts at 400 m, 100 m and 20 m, once each per manoeuvre.
+- `server/src/routing.js`: OSRM wrapper. Converts OSRM's `[lng, lat]` into `{lat, lng}`, keeps each step's duration for the ETA, and builds the instruction text for every OSRM manoeuvre type.
+- `web/js/nav.js`: navigator. Measures progress along the route line, so a GPS gap cannot leave the prompt on a passed turn. Reports the current step, distance to the next turn along the road, distance and time left, and off-route state. No network, no timers.
+- `web/js/voice.js`: spoken prompts at 400 m, 100 m and 20 m, once each per manoeuvre. A manoeuvre is known by its instruction and position, so prompts survive a reroute.
 - `web/js/map.js`: map screen, search, GPS and the navigation view. Reroutes at most once every 10 seconds.
 - `web/js/config.js`: API base. Empty in the repo; the Android build sets it.
 - `android/`: Capacitor Android project. The location permissions are in its manifest, and cleartext HTTP is allowed so the phone can reach the PC's server.

@@ -299,8 +299,10 @@ function followNavigation(pos, heading) {
   const state = navigator_.update(pos);
   navDistance.textContent = formatMetres(state.distanceToNextM);
   navStreet.textContent = state.instruction;
-  navRemaining.textContent = `${formatMetres(pendingRoute.distanceM)} route`;
-  const etaMs = Date.now() + pendingRoute.durationS * 1000;
+  navRemaining.textContent = `${formatMetres(state.remainingM)} left`;
+  // From what is left to drive, so the arrival time holds steady instead of
+  // sliding later with every fix.
+  const etaMs = Date.now() + state.remainingS * 1000;
   navEta.textContent = new Date(etaMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   voice.onUpdate(state);
   sendCarState(state);

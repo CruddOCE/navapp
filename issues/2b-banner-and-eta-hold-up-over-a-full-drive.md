@@ -14,3 +14,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test. Navigation screen tested on phone; the full road drive is not done.
+- 2026-10-30: Two fixes before the road test. The ETA now comes from the time still to drive (per-step OSRM durations), so it holds steady instead of sliding later. The bottom line now counts down the distance left ("12.1 km left") instead of showing the total route length. Also the prompt can no longer stick on a passed turn after a GPS gap. Replayed on a real 22 km route in test/nav.test.js; road test still to do.

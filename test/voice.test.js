@@ -45,6 +45,29 @@ module.exports = [
     },
   },
   {
+    name: 'after a reroute, a new turn with the same step number still gets its 100 m prompt',
+    fn: async () => {
+      const said = [];
+      const v = createVoice({ speak: (t) => said.push(t) });
+      const a = { lat: -31.95, lng: 115.86 };
+      const b = { lat: -31.96, lng: 115.85 };
+      v.onUpdate(state({ instruction: 'Turn left onto A St', stepLocation: a, distanceToNextM: 90 }));
+      v.onUpdate(state({ instruction: 'Turn right onto B St', stepLocation: b, distanceToNextM: 90 }));
+      assert.deepStrictEqual(said, ['In 100 metres, turn left onto A St', 'In 100 metres, turn right onto B St']);
+    },
+  },
+  {
+    name: 'after a reroute, the same turn under a new step number is not announced again',
+    fn: async () => {
+      const said = [];
+      const v = createVoice({ speak: (t) => said.push(t) });
+      const a = { lat: -31.95, lng: 115.86 };
+      v.onUpdate(state({ stepIndex: 3, instruction: 'Turn left onto A St', stepLocation: a, distanceToNextM: 90 }));
+      v.onUpdate(state({ stepIndex: 1, instruction: 'Turn left onto A St', stepLocation: a, distanceToNextM: 85 }));
+      assert.strictEqual(said.length, 1);
+    },
+  },
+  {
     name: 'arrival is spoken once',
     fn: async () => {
       const said = [];

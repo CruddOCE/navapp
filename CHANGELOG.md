@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- The turn prompt no longer sticks on a turn already passed after a GPS gap or stall. Progress is measured along the route line, and every turn behind the car is passed at once.
+- The arrival time holds steady. It now comes from the time still to drive, using each road's own speed from OSRM, instead of sliding later with every fix.
+- Fork, merge, on and off ramps, end of road, roundabout exits and U-turns each get their own wording, instead of "Continue on". Roundabouts say which exit. Unnamed roads use their route number.
+- After a reroute, a new turn gets its full voice prompts, and the same turn is not announced twice.
+
+### Changed
+- The bottom bar shows the distance left ("12.1 km left") instead of the total route length.
+- Distance to the next turn is measured along the road, not as a straight line.
+
 ## 0.01 (2026-10-29)
 
 First test build. Debug APK for personal testing; not a public release.

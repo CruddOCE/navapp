@@ -2,20 +2,60 @@
 // uses everywhere. OSRM returns [lng, lat] pairs; the app uses {lat, lng}, so
 // the swap happens once, here, and nowhere else.
 
+// Left or right only, for wording where "slight" or "sharp" reads badly
+// ("Keep left", "Take the exit on the right").
+function sideOf(modifier) {
+  if (/left/.test(modifier)) return 'left';
+  if (/right/.test(modifier)) return 'right';
+  return '';
+}
+
+function tidy(text) {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+// Covers every OSRM manoeuvre type. Anything not named here still reads as
+// "Continue on", which is only right when the driver really does carry on.
 function instructionFor(step) {
   const m = step.maneuver || {};
-  const name = step.name ? ` onto ${step.name}` : '';
-  const road = step.name || 'the road';
+  const modifier = m.modifier || '';
+  // Unnamed roads often still have a number (ref), such as a state route.
+  // A bare number reads as "onto 1", so it is spoken as "route 1".
+  const ref = step.ref ? (/^\d+$/.test(step.ref) ? `route ${step.ref}` : step.ref) : '';
+  const roadName = step.name || ref;
+  const onto = roadName ? ` onto ${roadName}` : '';
+  const road = roadName || 'the road';
+  const side = sideOf(modifier);
+
+  if (modifier === 'uturn' && m.type !== 'depart' && m.type !== 'arrive') {
+    return `Make a U-turn${onto}`;
+  }
   switch (m.type) {
     case 'depart':
-      return `Head ${m.modifier || 'on'} ${road}`;
+      return `Head ${modifier || 'on'} ${road}`;
     case 'arrive':
       return 'You have arrived';
     case 'turn':
-      return `Turn ${m.modifier || ''}${name}`.replace(/\s+/g, ' ').trim();
+    case 'end of road':
+      return modifier === 'straight' ? `Go straight${onto}` : tidy(`Turn ${modifier}${onto}`);
+    case 'fork':
+      return `Keep ${side || 'straight'}${onto}`;
+    case 'merge':
+      return tidy(`Merge ${side}${onto}`);
+    case 'on ramp':
+      return `Take the ramp${side ? ` on the ${side}` : ''}${onto}`;
+    case 'off ramp':
+      return `Take the exit${side ? ` on the ${side}` : ''}${onto}`;
     case 'roundabout':
     case 'rotary':
-      return `Take the roundabout${name}`;
+      return m.exit ? `At the roundabout, take exit ${m.exit}${onto}` : `Take the roundabout${onto}`;
+    case 'roundabout turn':
+      return tidy(`At the roundabout, turn ${modifier}${onto}`);
+    case 'exit roundabout':
+    case 'exit rotary':
+      return `Exit the roundabout${onto}`;
+    case 'new name':
+      return roadName ? `Continue onto ${roadName}` : 'Continue';
     default:
       return `Continue on ${road}`;
   }
@@ -29,6 +69,8 @@ function parseOsrmResponse(json) {
   const steps = route.legs.flatMap((leg) => leg.steps).map((step) => ({
     instruction: instructionFor(step),
     distanceM: step.distance,
+    // Time for this step's stretch of road, used for a per-road-speed ETA.
+    durationS: step.duration,
     maneuver: step.maneuver.type,
     location: { lat: step.maneuver.location[1], lng: step.maneuver.location[0] },
   }));

@@ -1,7 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { createRouter, parseOsrmResponse } = require('../server/src/routing');
+const { createRouter, parseOsrmResponse, instructionFor } = require('../server/src/routing');
 
 const fixture = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'fixtures', 'osrm-route.json'), 'utf8')
@@ -32,6 +32,55 @@ module.exports = [
       assert.strictEqual(steps[0].instruction, 'Head left Mounts Bay Rd');
       assert.strictEqual(steps[1].instruction, 'Turn right onto Harbour St');
       assert.strictEqual(steps[2].instruction, 'You have arrived');
+    },
+  },
+  {
+    name: 'every OSRM manoeuvre type gets its own wording, not "Continue on"',
+    fn: async () => {
+      const cases = [
+        [{ type: 'turn', modifier: 'left' }, 'Turn left onto High St'],
+        [{ type: 'turn', modifier: 'straight' }, 'Go straight onto High St'],
+        [{ type: 'end of road', modifier: 'right' }, 'Turn right onto High St'],
+        [{ type: 'turn', modifier: 'uturn' }, 'Make a U-turn onto High St'],
+        [{ type: 'continue', modifier: 'uturn' }, 'Make a U-turn onto High St'],
+        [{ type: 'fork', modifier: 'slight left' }, 'Keep left onto High St'],
+        [{ type: 'fork', modifier: 'straight' }, 'Keep straight onto High St'],
+        [{ type: 'merge', modifier: 'slight right' }, 'Merge right onto High St'],
+        [{ type: 'on ramp', modifier: 'right' }, 'Take the ramp on the right onto High St'],
+        [{ type: 'off ramp', modifier: 'slight left' }, 'Take the exit on the left onto High St'],
+        [{ type: 'roundabout', exit: 3 }, 'At the roundabout, take exit 3 onto High St'],
+        [{ type: 'rotary' }, 'Take the roundabout onto High St'],
+        [{ type: 'roundabout turn', modifier: 'left' }, 'At the roundabout, turn left onto High St'],
+        [{ type: 'exit roundabout' }, 'Exit the roundabout onto High St'],
+        [{ type: 'exit rotary' }, 'Exit the roundabout onto High St'],
+        [{ type: 'new name' }, 'Continue onto High St'],
+        [{ type: 'continue', modifier: 'straight' }, 'Continue on High St'],
+        [{ type: 'notification' }, 'Continue on High St'],
+      ];
+      for (const [maneuver, want] of cases) {
+        assert.strictEqual(instructionFor({ name: 'High St', maneuver }), want, JSON.stringify(maneuver));
+      }
+    },
+  },
+  {
+    name: 'an unnamed road uses its number, and a bare number reads as "route N"',
+    fn: async () => {
+      assert.strictEqual(
+        instructionFor({ name: '', ref: '1', maneuver: { type: 'off ramp', modifier: 'left' } }),
+        'Take the exit on the left onto route 1'
+      );
+      assert.strictEqual(
+        instructionFor({ name: '', ref: 'M1', maneuver: { type: 'merge', modifier: 'left' } }),
+        'Merge left onto M1'
+      );
+      assert.strictEqual(instructionFor({ name: '', maneuver: { type: 'new name' } }), 'Continue');
+    },
+  },
+  {
+    name: 'each step keeps its OSRM duration for the ETA',
+    fn: async () => {
+      const steps = parseOsrmResponse(fixture).steps;
+      assert.deepStrictEqual(steps.map((s) => s.durationS), [80.1, 130.2, 0]);
     },
   },
   {

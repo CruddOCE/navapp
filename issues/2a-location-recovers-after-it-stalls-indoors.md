@@ -17,3 +17,4 @@ Note: do this first in Phase 2. The navigator depends on the position updating.
 ## Status log
 
 - 2026-10-29: Built, awaiting test.
+- 2026-10-30: Navigator fixed so a fix jump after a stall no longer leaves the prompt on a turn already passed: progress is now measured along the route line and every turn behind the car is passed in one update. Covered by the 300 m gap replay in test/nav.test.js. Still needs the indoor stall check on the phone.
