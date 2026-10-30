@@ -27,6 +27,8 @@ Last updated: 2026-10-31. Read this first when resuming.
 - **Page and service (`NavStatePlugin`).** At Start, map.js calls `startRoute({ route, destination })`; at End, `stopRoute()`. The service sends `navState` on each fix, `rerouted` with the new route, `message` and `ended`. While the page is hidden the plugin holds back `navState` and `message` (they would only pile up and replay in a burst) and sends the latest state once when the page is shown again; `rerouted` and `ended` are kept until delivered. In a desktop browser, map.js runs `nav.js` and `voice.js` itself instead.
 - **Keeping the two navigators the same.** `scripts/make-nav-expectations.js` replays 5 drives through `nav.js` and `voice.js` into `test/fixtures/nav-expected.json`. `NavigatorParityTest` replays the same file through the Java copies and must match every fix. `InstructionsTest` holds the same wording cases as `routing.test.js`. Android's `org.json` is only a stub in JVM tests, so JSON lives in `RouteJson` (app only) and the tests read fixtures with Gson (test dependency only).
 - **Screen on.** The plugin still keeps the screen on while a route is active, for a phone in a cradle. Navigation no longer depends on it.
+- **Car screen (`car/NavScreen.java`).** While navigating it shows Android Auto's navigation template: a turn card (arrow, distance, instruction) and an End button that appears when the screen is touched. The template will not build without that action strip, and the host shows no turn card for an "unknown" turn without an icon, so every step gets a real turn type from `nav/TurnTypes.java` and an arrow from `res/drawable/turn_*.xml`. Each route step carries OSRM's `modifier`, `exit` and `drivingSide` for this. There is no map yet: the area behind the card is black until navapp draws one on the car surface.
+- **Traffic side.** OSRM's public server reports `driving_side: right` even in Australia (checked 2026-10-31), so the service takes the side from the phone's network country (`TelephonyManager`), with a list of left-hand-traffic countries in `TurnTypes`, and only falls back to OSRM's value with no network. It decides which way roundabouts and U-turns point.
 - **Starting off the road.** OSRM starts the route on the nearest road, so a car in a car park, a driveway or indoors can begin more than 40 m from the line. Until the first fix on the route, only moving 40 m further away than the starting distance counts as off route, so the app does not reroute before it has moved.
 - **Driver messages while navigating.** The status line is hidden during navigation, so `showMessage` puts messages (reports offline, report posted, reroute results) in the banner for 4 s before the next instruction takes it back.
 - **Navigator depart step.** The depart step is skipped if the first GPS fix is more than 25 m from the start point (the app was opened mid-route).
@@ -41,7 +43,12 @@ Last updated: 2026-10-31. Read this first when resuming.
 ## In progress at the stop
 
 - Nothing is half-edited.
-- **Desktop Head Unit check not finished.** The DHU (`%LOCALAPPDATA%\Android\Sdk\extras\google\auto\desktop-head-unit.exe`, after `adb forward tcp:5277 tcp:5277` with the phone's head unit server running) connected but reported "Don't have video focus", so no car screen came through. Next: start it from a visible terminal and check the DHU window and the phone for an Android Auto prompt.
+- **Desktop Head Unit, checked 2026-10-31.** navapp opens on the car, a route shows the turn card with the right arrow, and End on the car ends the route on the phone. How to connect:
+  1. On the phone, open Android Auto's settings (`adb shell am start -n com.google.android.projection.gearhead/.companion.settings.DefaultSettingsActivity`) and keep that screen in front. If another app is in front, the phone's freezer kills Android Auto mid-handshake ("Kill app due to repeated failure to freeze binder") and the DHU sits on "Waiting for phone...".
+  2. In its ⋮ menu, make sure the head unit server is running (the menu then offers "Stop head unit server"). A freezer kill turns it off; check with `adb shell "ss -ltn | grep 5277"`.
+  3. `adb forward tcp:5277 tcp:5277`, then start `%LOCALAPPDATA%\Android\Sdk\extras\google\auto\desktop-head-unit.exe`. The DHU reads console commands (`tap X Y`, `screenshot FILE`) on its standard input, which is the easiest way to drive it from a script.
+  4. After reinstalling the APK, reconnect the DHU: Android Auto keeps the old package's resources and fails to load new icons (`Resources$NotFoundException`).
+  - Connecting may auto-start music on the phone (Android Auto's "Start music automatically").
 - The dev server on port 8090 is running.
 - **Reading the engine:** `adb shell dumpsys activity service com.example.navapp/.NavLocationService` prints fixes handled, seconds since the last fix, prompts spoken, the last prompt, reroutes and the latest state. It works while the page is not running.
 - **Debugging the live app page:** a debug build allows WebView debugging. `adb forward tcp:9333 localabstract:webview_devtools_remote_<app pid>`, then `http://127.0.0.1:9333/json` lists the page and its DevTools WebSocket, which can run JavaScript in the running app.
@@ -49,7 +56,7 @@ Last updated: 2026-10-31. Read this first when resuming.
 ## Next steps (in order)
 
 1. **Road test, away from home, phone locked and not connected to anything:** issues 2a to 2d, with a passenger. Listen for the prompts with the phone locked. Save the GPS trace as a fixture for both navigators (issue 2e).
-2. **Issue 4a-1:** get video on the Desktop Head Unit and confirm a route shows and updates with the phone locked.
+2. **Car screen map:** draw a map on the car surface behind the turn card (needs the `androidx.car.app.ACCESS_SURFACE` permission and a `SurfaceCallback`). Then confirm on the DHU that the card updates with the phone locked.
 3. **Issues 3b and 3c:** confirm reports and votes on two phones.
 4. **Report sheet and card:** they do not close when the map is tapped (board #41 and #44).
 5. **Issues 3d and 4a-2:** need the owner's approval before starting.

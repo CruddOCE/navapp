@@ -72,6 +72,10 @@ function parseOsrmResponse(json) {
     // Time for this step's stretch of road, used for a per-road-speed ETA.
     durationS: step.duration,
     maneuver: step.maneuver.type,
+    // Direction, roundabout exit and traffic side, for the car screen's turn arrow.
+    modifier: step.maneuver.modifier || '',
+    exit: step.maneuver.exit || 0,
+    drivingSide: step.driving_side || 'right',
     location: { lat: step.maneuver.location[1], lng: step.maneuver.location[0] },
   }));
   return {

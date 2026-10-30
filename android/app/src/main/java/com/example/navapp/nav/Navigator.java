@@ -93,6 +93,12 @@ public final class Navigator {
         haveStepTimes = times;
     }
 
+    // The route step behind a State's stepIndex, for details the state leaves out
+    // (the turn's direction and roundabout exit for the car screen).
+    public NavRoute.Step step(int index) {
+        return route.steps.get(index);
+    }
+
     public static double distanceM(double aLat, double aLng, double bLat, double bLng) {
         final double r = 6371000;
         double dLat = Math.toRadians(bLat - aLat);

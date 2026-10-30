@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Turn arrow for the Android Auto turn card (see nav/TurnTypes.java). White on
+     transparent; the car host tints it to suit day or night. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group android:pivotX="12" android:scaleX="-1">
+        <path android:strokeColor="#FFFFFFFF" android:strokeWidth="2.6" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M7,21 L7,8 Q7,5 10,7 L15.5,13.5" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M19.5,18 L19.5,10.5 L12,17 Z" />
+    </group>
+</vector>

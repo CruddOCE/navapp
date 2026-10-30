@@ -13,3 +13,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test. Car screen opens on the DHU with no crash; route on the car not confirmed.
+- 2026-10-31: Partly confirmed on the Desktop Head Unit. A route started on the phone shows on the car as a turn card: the right-turn arrow, the distance (185 m) and "Turn right onto Crossman Road", updated on each fix. End on the car ends the route on the phone. First run crashed ("Action strip for this template must be set") and showed no card (turn sent as unknown with no icon); both fixed. The route line itself does not draw yet: there is no map on the car screen, so the area behind the card is black. Stays Built, awaiting test until the map is drawn.

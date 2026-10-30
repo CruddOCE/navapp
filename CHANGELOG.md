@@ -11,6 +11,8 @@
 - GPS no longer stalls. The app asked for a fix only every 30 s (the plugin uses the timeout as the update interval) while a 20 s watchdog restarted the watch, and error retries left old watches running. Now it asks every second, keeps one watch, and only the watchdog restarts it.
 - Navigation keeps going with the phone locked or another app in front. It now runs in the Android location service (shown as a "navapp is navigating" notification): turn tracking, voice prompts, the car screen and rerouting. Before, it ran in the app's web page, which Android stops after about a minute in the background, so everything froze.
 - The car screen now tells Android Auto when navigation ends, not only when it starts.
+- The car screen no longer crashes when a route starts. Android Auto's navigation screen needs at least one button, and it had none; it now has End, which ends the route on the phone too.
+- The car screen now shows a turn card: an arrow for the kind of turn (left, right, slight, sharp, U-turn, merge, roundabout, arrival and more), the distance and the instruction. Before, every turn was sent as "unknown" with no icon, so nothing showed.
 - Starting a route away from a road (a driveway, a car park, indoors) no longer reroutes over and over before the car has moved.
 - Messages for the driver, such as "Reports need the home server", now show in the navigation banner while navigating, instead of the hidden status line.
 - Routing no longer fails with 403 from the OSRM demo server, which refuses Android's default User-Agent.
@@ -24,6 +26,7 @@
 - Distance to the next turn is measured along the road, not as a straight line.
 
 ### Known issues
+- The car screen shows no map behind the turn card yet; that area stays black.
 - The 0.01 report button crash did not reproduce in five tap-out cycles on the phone. The report sheet and the report card still do not close when you tap the map.
 
 ## 0.01 (2026-10-29)

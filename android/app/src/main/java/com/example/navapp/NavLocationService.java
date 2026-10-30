@@ -28,6 +28,7 @@ import com.example.navapp.nav.NavRoute;
 import com.example.navapp.nav.Navigator;
 import com.example.navapp.nav.OsrmClient;
 import com.example.navapp.nav.RouteJson;
+import com.example.navapp.nav.TurnTypes;
 import com.example.navapp.nav.VoicePrompter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,6 +80,7 @@ public class NavLocationService extends Service {
     private boolean ended = false;
     private double lastLat = Double.NaN;
     private double lastLng = Double.NaN;
+    private String networkCountry = "";
     // For dump(): proves the engine is running while the page cannot be asked.
     private int fixesHandled = 0;
     private long lastFixAt = 0;
@@ -121,6 +123,10 @@ public class NavLocationService extends Service {
             return START_NOT_STICKY;
         }
         ended = false;
+        // Which side traffic drives on comes from the mobile network's country
+        // (OSRM's own value is unreliable); empty when there is no network.
+        android.telephony.TelephonyManager phone = getSystemService(android.telephony.TelephonyManager.class);
+        networkCountry = phone == null ? "" : phone.getNetworkCountryIso();
         if (speaker == null) {
             speaker = new AndroidSpeaker(this);
             voice = new VoicePrompter(text -> {
@@ -155,7 +161,9 @@ public class NavLocationService extends Service {
         lastFixAt = SystemClock.elapsedRealtime();
         Navigator.State s = navigator.update(lastLat, lastLng);
         voice.onUpdate(s);
-        NavState.update(!s.arrived, s.instruction, (int) Math.round(s.distanceToNextM));
+        NavRoute.Step next = navigator.step(s.stepIndex);
+        String side = TurnTypes.drivingSide(networkCountry, next.drivingSide);
+        NavState.update(!s.arrived, s.instruction, (int) Math.round(s.distanceToNextM), TurnTypes.of(next, side), next.exit);
         lastState = toJson(s, fix);
         Listener l = listener;
         if (l != null) l.onState(lastState);

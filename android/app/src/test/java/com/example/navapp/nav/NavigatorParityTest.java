@@ -44,7 +44,10 @@ public class NavigatorParityTest {
             steps.add(new NavRoute.Step(s.get("instruction").getAsString(), s.get("maneuver").getAsString(),
                     loc.get("lat").getAsDouble(), loc.get("lng").getAsDouble(),
                     s.get("distanceM").getAsDouble(),
-                    s.has("durationS") ? s.get("durationS").getAsDouble() : Double.NaN));
+                    s.has("durationS") ? s.get("durationS").getAsDouble() : Double.NaN,
+                    s.has("modifier") ? s.get("modifier").getAsString() : "",
+                    s.has("exit") ? s.get("exit").getAsInt() : 0,
+                    s.has("drivingSide") ? s.get("drivingSide").getAsString() : "right"));
         }
         return new NavRoute(json.get("distanceM").getAsDouble(), json.get("durationS").getAsDouble(), geometry, steps);
     }

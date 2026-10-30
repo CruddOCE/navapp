@@ -93,6 +93,23 @@ module.exports = [
     },
   },
   {
+    name: 'each step keeps its turn direction, roundabout exit and traffic side for the car screen',
+    fn: async () => {
+      const steps = parseOsrmResponse(fixture).steps;
+      assert.deepStrictEqual(steps.map((s) => s.modifier), ['left', 'right', '']);
+      assert.deepStrictEqual(steps.map((s) => s.exit), [0, 0, 0]);
+      const withExit = JSON.parse(JSON.stringify(fixture));
+      const st = withExit.routes[0].legs[0].steps[1];
+      st.maneuver = { ...st.maneuver, type: 'roundabout', exit: 2 };
+      st.driving_side = 'left';
+      const round = parseOsrmResponse(withExit).steps[1];
+      assert.strictEqual(round.exit, 2);
+      assert.strictEqual(round.drivingSide, 'left');
+      // OSRM leaves driving_side out on some servers; right is its default.
+      assert.strictEqual(steps[0].drivingSide, fixture.routes[0].legs[0].steps[0].driving_side || 'right');
+    },
+  },
+  {
     name: 'getRoute builds the OSRM URL with lng,lat order',
     fn: async () => {
       const seen = [];

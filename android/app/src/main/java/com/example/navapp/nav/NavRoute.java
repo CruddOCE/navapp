@@ -16,14 +16,24 @@ public final class NavRoute {
         public final double distanceM;
         // NaN when the route has no per-step times (older or hand-made routes).
         public final double durationS;
+        // For the car screen's turn arrow (TurnTypes): OSRM's direction
+        // ("left", "slight right", "uturn"...), the roundabout exit (0 if none) and
+        // which side traffic drives on ("left" or "right").
+        public final String modifier;
+        public final int exit;
+        public final String drivingSide;
 
-        public Step(String instruction, String maneuver, double lat, double lng, double distanceM, double durationS) {
+        public Step(String instruction, String maneuver, double lat, double lng, double distanceM, double durationS,
+                    String modifier, int exit, String drivingSide) {
             this.instruction = instruction;
             this.maneuver = maneuver;
             this.lat = lat;
             this.lng = lng;
             this.distanceM = distanceM;
             this.durationS = durationS;
+            this.modifier = modifier == null ? "" : modifier;
+            this.exit = exit;
+            this.drivingSide = drivingSide == null || drivingSide.isEmpty() ? "right" : drivingSide;
         }
     }
 

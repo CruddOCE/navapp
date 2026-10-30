@@ -36,7 +36,10 @@ public final class RouteJson {
                     loc.getDouble("lat"),
                     loc.getDouble("lng"),
                     s.optDouble("distanceM", 0),
-                    s.optDouble("durationS", Double.NaN)));
+                    s.optDouble("durationS", Double.NaN),
+                    s.optString("modifier", ""),
+                    s.optInt("exit", 0),
+                    s.optString("drivingSide", "right")));
         }
         return new NavRoute(json.getDouble("distanceM"), json.getDouble("durationS"), geometry, steps);
     }
@@ -69,6 +72,9 @@ public final class RouteJson {
                         .put("distanceM", s.optDouble("distance", 0))
                         .put("durationS", s.optDouble("duration", 0))
                         .put("maneuver", m.optString("type"))
+                        .put("modifier", m.optString("modifier", ""))
+                        .put("exit", m.optInt("exit", 0))
+                        .put("drivingSide", s.optString("driving_side", "right"))
                         .put("location", new JSONObject().put("lat", at.getDouble(1)).put("lng", at.getDouble(0))));
             }
         }

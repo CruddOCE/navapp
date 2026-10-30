@@ -1,5 +1,5 @@
 {
- "description": "Real route from OSRM (router.project-osrm.org), Perth CBD to Fremantle, captured 2026-10-30 through parseOsrmResponse. Used to replay drives in nav.test.js.",
+ "description": "Real route from OSRM (router.project-osrm.org), Perth CBD to Fremantle, captured through parseOsrmResponse (first 2026-10-30, recaptured 2026-10-31 for the turn direction fields). Used to replay drives in nav.test.js and nav-expected.json.",
  "route": {
   "distanceM": 22342.4,
   "durationS": 1422.7,
@@ -2047,6 +2047,9 @@
     "distanceM": 9.7,
     "durationS": 7.5,
     "maneuver": "depart",
+    "modifier": "straight",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.950669,
      "lng": 115.860375
@@ -2057,6 +2060,9 @@
     "distanceM": 143.8,
     "durationS": 18.6,
     "maneuver": "turn",
+    "modifier": "left",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.950745,
      "lng": 115.860324
@@ -2067,6 +2073,9 @@
     "distanceM": 108.6,
     "durationS": 16.1,
     "maneuver": "turn",
+    "modifier": "right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.951334,
      "lng": 115.861677
@@ -2077,6 +2086,9 @@
     "distanceM": 1119,
     "durationS": 134.1,
     "maneuver": "turn",
+    "modifier": "right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.952273,
      "lng": 115.861394
@@ -2087,6 +2099,9 @@
     "distanceM": 138.1,
     "durationS": 14.4,
     "maneuver": "turn",
+    "modifier": "left",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.948758,
      "lng": 115.850427
@@ -2097,6 +2112,9 @@
     "distanceM": 278.9,
     "durationS": 18,
     "maneuver": "on ramp",
+    "modifier": "straight",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.949921,
      "lng": 115.849906
@@ -2107,6 +2125,9 @@
     "distanceM": 1138.1,
     "durationS": 64.2,
     "maneuver": "merge",
+    "modifier": "slight right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.952132,
      "lng": 115.848533
@@ -2117,6 +2138,9 @@
     "distanceM": 9360.1,
     "durationS": 439.2,
     "maneuver": "new name",
+    "modifier": "straight",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -31.961754,
      "lng": 115.847438
@@ -2127,6 +2151,9 @@
     "distanceM": 407.2,
     "durationS": 23.1,
     "maneuver": "off ramp",
+    "modifier": "slight left",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.042382,
      "lng": 115.855209
@@ -2137,6 +2164,9 @@
     "distanceM": 77.6,
     "durationS": 6.9,
     "maneuver": "fork",
+    "modifier": "slight right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.045854,
      "lng": 115.856284
@@ -2147,6 +2177,9 @@
     "distanceM": 7291.6,
     "durationS": 487.8,
     "maneuver": "continue",
+    "modifier": "right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.046544,
      "lng": 115.856172
@@ -2157,6 +2190,9 @@
     "distanceM": 1372.8,
     "durationS": 90.4,
     "maneuver": "new name",
+    "modifier": "straight",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.050521,
      "lng": 115.779577
@@ -2167,6 +2203,9 @@
     "distanceM": 58.2,
     "durationS": 2.4,
     "maneuver": "roundabout",
+    "modifier": "slight left",
+    "exit": 1,
+    "drivingSide": "right",
     "location": {
      "lat": -32.050982,
      "lng": 115.765082
@@ -2177,6 +2216,9 @@
     "distanceM": 401.2,
     "durationS": 35.5,
     "maneuver": "exit roundabout",
+    "modifier": "straight",
+    "exit": 1,
+    "drivingSide": "right",
     "location": {
      "lat": -32.050987,
      "lng": 115.764534
@@ -2187,6 +2229,9 @@
     "distanceM": 269,
     "durationS": 40.2,
     "maneuver": "turn",
+    "modifier": "left",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.05072,
      "lng": 115.760342
@@ -2197,6 +2242,9 @@
     "distanceM": 168.2,
     "durationS": 24.3,
     "maneuver": "turn",
+    "modifier": "right",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.053146,
      "lng": 115.760374
@@ -2207,6 +2255,9 @@
     "distanceM": 0,
     "durationS": 0,
     "maneuver": "arrive",
+    "modifier": "left",
+    "exit": 0,
+    "drivingSide": "right",
     "location": {
      "lat": -32.053328,
      "lng": 115.758605

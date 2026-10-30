@@ -15,6 +15,9 @@ public final class NavState {
     private static volatile boolean active = false;
     private static volatile String instruction = "";
     private static volatile int distanceM = 0;
+    // Android Auto Maneuver type and roundabout exit for the turn card (TurnTypes).
+    private static volatile int turnType = 0;
+    private static volatile int exitNumber = 0;
     private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
     private NavState() {}
@@ -31,10 +34,24 @@ public final class NavState {
         return distanceM;
     }
 
+    public static int getTurnType() {
+        return turnType;
+    }
+
+    public static int getExitNumber() {
+        return exitNumber;
+    }
+
     public static void update(boolean nowActive, String text, int meters) {
+        update(nowActive, text, meters, 0, 0);
+    }
+
+    public static void update(boolean nowActive, String text, int meters, int turn, int exit) {
         active = nowActive;
         instruction = text == null ? "" : text;
         distanceM = Math.max(0, meters);
+        turnType = turn;
+        exitNumber = exit;
         for (Listener l : listeners) l.onChanged();
     }
 
