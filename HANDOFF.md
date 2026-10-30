@@ -21,7 +21,16 @@ Last updated: 2026-10-30. Read this first when resuming.
 - **Reports still need the PC.** The APK calls the report server at `http://<PC Wi-Fi IP>:8090`, baked in at build time. Away from it, the ! button says "Reports need the home server", and the live channel retries with a gap growing from 5 s to a minute. The manifest allows cleartext HTTP for this; the release build needs an HTTPS API (slice R1).
 - **User-Agent.** Both Nominatim and the OSRM demo refuse requests without an identifying User-Agent. OSRM answers 403 to Android's default `Dalvik` agent. The app sends `navapp/0.01 (personal test build; https://github.com/CruddOCE/navapp)`.
 - **GPS watch (`web/js/gps.js`).** One watch at a time, asking for a fix every second. A 20 s watchdog is the only thing that restarts it. The plugin timeout is 10 minutes so a tunnel does not end the watch.
-- **GPS with the screen locked.** While a route is active, `NavLocationService` runs as a foreground service of type location with a "navapp is navigating" notification. The NavState plugin starts it when navigation starts and stops it when it ends; the car screen's stop also stops it. With it, Android keeps serving the app's while-in-use location in the background (checked with `dumpsys location` on 2026-10-30). No "allow all the time" permission is needed.
+- **GPS in the background.** While a route is active, `NavLocationService` runs as a foreground service of type location with a "navapp is navigating" notification. The NavState plugin starts it when navigation starts and stops it when it ends; the car screen's stop also stops it. With it, Android and Play services keep the app's request live in the background (1 s, high accuracy, no batching, checked with `dumpsys location` and Play services' dump on 2026-10-30). No "allow all the time" permission is needed. Ending a route was checked to stop the service and remove the notification.
+- **Known gap: a hidden page stops running.** Measured on 2026-10-30 with a temporary native log and WebView debugging, app in the background:
+  - Native code in `NavLocationService` received fixes steadily for the full 2 minutes, each 0.06 to 5 s old.
+  - The page received fixes only for the first 60 s.
+  - After that, a plugin call from the page and an 8 s timer in the page both waited about 150 s, until the app came back to the front.
+  - The renderer stayed at foreground priority and Play services kept serving the 1 s request.
+
+  So Android and Play services are fine; the WebView stops running a page that has been hidden for a while, and every message waits for it. Android has no supported switch to stop that. **Interim:** the NavState plugin keeps the screen on (`FLAG_KEEP_SCREEN_ON`) while a route is active. **Real fix:** move the navigator, voice prompts, car screen updates and rerouting into `NavLocationService`, with the page as display only. Planned as its own slice.
+- **Starting off the road.** OSRM starts the route on the nearest road, so a car in a car park, a driveway or indoors can begin more than 40 m from the line. Until the first fix on the route, only moving 40 m further away than the starting distance counts as off route, so the app does not reroute before it has moved.
+- **Driver messages while navigating.** The status line is hidden during navigation, so `showMessage` puts messages (reports offline, report posted, reroute results) in the banner for 4 s before the next instruction takes it back.
 - **Navigator depart step.** The depart step is skipped if the first GPS fix is more than 25 m from the start point (the app was opened mid-route).
 - **Navigator progress.** Measured along the route line, not by circles around each turn. Each fix is matched to the line searching forward from current progress (2 segments of slack), so a road the route uses twice is matched to the right pass. Progress only moves forward, and only while on the route. A turn is passed once progress is beyond it, or once a fix lands within 25 m of it, so a GPS gap passes every skipped turn at once. Distance to the next turn is along the road while on the route, straight line when off it.
 - **Off route.** Measured as distance to the nearest route segment, not the nearest vertex. Off route after 3 fixes in a row, more than 40 m away. Reroute at most every 10 seconds.
@@ -33,7 +42,10 @@ Last updated: 2026-10-30. Read this first when resuming.
 
 ## In progress at the stop
 
-Nothing is half-edited. The dev server on port 8090 was stopped on purpose for the standalone test; start it again with `npm start` for reports. A test route was left running on the phone when the owner picked the phone up; ending it in the app also stops the notification.
+- Nothing is half-edited. The temporary `NavProbe` log used for the background test has been removed.
+- The native navigation slice is being planned; nothing of it is built yet.
+- The dev server on port 8090 is running.
+- **Debugging the live app page:** a debug build allows WebView debugging. `adb forward tcp:9333 localabstract:webview_devtools_remote_<app pid>`, then `http://127.0.0.1:9333/json` lists the page and its DevTools WebSocket, which can run JavaScript in the running app.
 
 ## Next steps (in order)
 

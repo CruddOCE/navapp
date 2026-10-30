@@ -101,6 +101,12 @@ function createNavigator(route) {
   let firstFix = true;
   let progressSeg = 0;
   let progressM = 0;
+  // OSRM starts the route on the nearest road, so a car in a car park, a
+  // driveway or a house can begin more than OFF_ROUTE_M from the line. Until
+  // the first fix on the route, only moving further away from it counts as
+  // off route; otherwise the app reroutes over and over before it has moved.
+  let joined = false;
+  let startOffsetM = null;
 
   // Matches a fix to the line, searching forward from current progress so a
   // later pass along the same road is never mistaken for the current one.
@@ -144,8 +150,12 @@ function createNavigator(route) {
   }
 
   function update(pos) {
-    const onRoute = distanceToRouteM(pos, geometry) <= OFF_ROUTE_M;
-    missedFixes = onRoute ? 0 : missedFixes + 1;
+    const fromLineM = distanceToRouteM(pos, geometry);
+    const onRoute = fromLineM <= OFF_ROUTE_M;
+    if (onRoute) joined = true;
+    if (startOffsetM === null) startOffsetM = fromLineM;
+    const away = joined ? !onRoute : fromLineM > startOffsetM + OFF_ROUTE_M;
+    missedFixes = away ? missedFixes + 1 : 0;
 
     // Progress only moves forward, and only while on the route.
     if (onRoute && hasLine) {

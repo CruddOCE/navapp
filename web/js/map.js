@@ -52,6 +52,21 @@ function setStatus(text) {
   statusLine.textContent = text || '';
 }
 
+// The status line is hidden while navigating, so a message meant for the
+// driver then shows in the navigation banner instead, held for a few seconds
+// before the next instruction takes the banner back.
+const BANNER_MESSAGE_MS = 4000;
+let bannerMessageUntil = 0;
+
+function showMessage(text) {
+  if (!navigating) {
+    setStatus(text);
+    return;
+  }
+  navStreet.textContent = text;
+  bannerMessageUntil = Date.now() + BANNER_MESSAGE_MS;
+}
+
 function formatMetres(m) {
   return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 10) * 10} m`;
 }
@@ -266,9 +281,9 @@ async function reroute() {
     pendingRoute = await fetchRoute(devicePosition, destination);
     navigator_ = createNavigator(pendingRoute);
     drawRoute(pendingRoute);
-    navStreet.textContent = 'Rerouting...';
+    showMessage('New route found.');
   } catch (err) {
-    navStreet.textContent = 'Off route. Reroute failed, still following old route.';
+    showMessage('Off route. Reroute failed, still following old route.');
   }
 }
 
@@ -276,7 +291,7 @@ function followNavigation(pos, heading) {
   if (!navigator_) return;
   const state = navigator_.update(pos);
   navDistance.textContent = formatMetres(state.distanceToNextM);
-  navStreet.textContent = state.instruction;
+  if (Date.now() >= bannerMessageUntil) navStreet.textContent = state.instruction;
   navRemaining.textContent = `${formatMetres(state.remainingM)} left`;
   // From what is left to drive, so the arrival time holds steady instead of
   // sliding later with every fix.
@@ -320,8 +335,8 @@ function showReportCard(report) {
   reportCard.hidden = false;
   reportCardTitle.textContent = `${REPORT_TYPES[report.type].label}, ${minutesAgo(report.createdAt)}`;
   reportCardCount.textContent = `${report.confirms} still there · ${report.dismisses} gone`;
-  voteConfirm.onclick = () => reports.vote(report.id, 'confirm').catch((err) => setStatus(err.message));
-  voteDismiss.onclick = () => reports.vote(report.id, 'dismiss').catch((err) => setStatus(err.message));
+  voteConfirm.onclick = () => reports.vote(report.id, 'confirm').catch((err) => showMessage(err.message));
+  voteDismiss.onclick = () => reports.vote(report.id, 'dismiss').catch((err) => showMessage(err.message));
 }
 
 const reports = createReports(map, { onSelect: showReportCard });
@@ -339,14 +354,14 @@ for (const [type, style] of Object.entries(REPORT_TYPES)) {
 function postReport(type) {
   reportSheet.hidden = true;
   if (!devicePosition) {
-    setStatus('Waiting for your location before reporting.');
+    showMessage('Waiting for your location before reporting.');
     return;
   }
   reports
     .create(type, devicePosition)
-    .then(() => setStatus('Report posted. Thanks!'))
+    .then(() => showMessage('Report posted. Thanks!'))
     // fetch throws a TypeError when the server cannot be reached at all.
-    .catch((err) => setStatus(err instanceof TypeError ? REPORTS_OFFLINE : err.message));
+    .catch((err) => showMessage(err instanceof TypeError ? REPORTS_OFFLINE : err.message));
 }
 
 // Reports live on the shared report server, which is the PC for now. Away from
@@ -355,7 +370,7 @@ const REPORTS_OFFLINE = 'Reports need the home server. Search and routes still w
 
 document.getElementById('report-btn').addEventListener('click', () => {
   if (!reports.isReachable()) {
-    setStatus(REPORTS_OFFLINE);
+    showMessage(REPORTS_OFFLINE);
     return;
   }
   reportSheet.hidden = false;

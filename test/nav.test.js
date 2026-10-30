@@ -219,6 +219,44 @@ module.exports = [
     },
   },
   {
+    name: 'starting 80 m off the road (a driveway or indoors) does not count as off route while waiting',
+    fn: async () => {
+      const nav = createNavigator(fremantle);
+      const start = { lat: fremantle.geometry[0][0], lng: fremantle.geometry[0][1] };
+      const metresPerDegLat = 111195;
+      // 80 m north of the route's first point, with 15 m of GPS jitter.
+      for (let i = 0; i < 20; i += 1) {
+        const jitter = (i % 2 ? 15 : -15) / metresPerDegLat;
+        const r = nav.update({ lat: start.lat + 80 / metresPerDegLat + jitter, lng: start.lng });
+        assert.strictEqual(r.offRoute, false, `fix ${i} counted as off route`);
+      }
+    },
+  },
+  {
+    name: 'starting off the road and driving further away still counts as off route',
+    fn: async () => {
+      const nav = createNavigator(fremantle);
+      const start = { lat: fremantle.geometry[0][0], lng: fremantle.geometry[0][1] };
+      const m = 111195;
+      nav.update({ lat: start.lat + 80 / m, lng: start.lng });
+      let r;
+      for (const d of [140, 160, 180]) r = nav.update({ lat: start.lat + d / m, lng: start.lng });
+      assert.strictEqual(r.offRoute, true);
+    },
+  },
+  {
+    name: 'once on the route, leaving it counts as off route as before',
+    fn: async () => {
+      const nav = createNavigator(fremantle);
+      const fixes = drive(fremantle, 50);
+      for (const f of fixes.slice(0, 10)) nav.update(f);
+      const at = fixes[10];
+      let r;
+      for (let i = 0; i < 3; i += 1) r = nav.update({ lat: at.lat + 100 / 111195, lng: at.lng });
+      assert.strictEqual(r.offRoute, true);
+    },
+  },
+  {
     name: 'route with no steps is rejected',
     fn: async () => {
       assert.throws(() => createNavigator({ steps: [], geometry: [] }), /needs a route with steps/);

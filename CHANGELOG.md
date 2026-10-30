@@ -9,16 +9,20 @@
 - After a reroute, a new turn gets its full voice prompts, and the same turn is not announced twice.
 
 - GPS no longer stalls. The app asked for a fix only every 30 s (the plugin uses the timeout as the update interval) while a 20 s watchdog restarted the watch, and error retries left old watches running. Now it asks every second, keeps one watch, and only the watchdog restarts it.
-- GPS keeps working with the screen locked or another app in front while a route is active, through a location service with a "navapp is navigating" notification.
+- Location keeps coming in with the screen locked or another app in front while a route is active, through a location service with a "navapp is navigating" notification. Known gap: after about a minute in the background, fixes reach the app late (see Known issues).
+- Starting a route away from a road (a driveway, a car park, indoors) no longer reroutes over and over before the car has moved.
+- Messages for the driver, such as "Reports need the home server", now show in the navigation banner while navigating, instead of the hidden status line.
 - Routing no longer fails with 403 from the OSRM demo server, which refuses Android's default User-Agent.
 
 ### Changed
 - The app works without the PC: search and routing go straight from the phone to Nominatim and OSRM over mobile data. Only crowd reports still need the PC's server; away from it, the ! button says "Reports need the home server".
 - Android 13 and later asks to allow notifications on first launch, for the navigation notification.
+- The screen stays on while a route is active, and goes back to normal when the route ends.
 - The bottom bar shows the distance left ("12.1 km left") instead of the total route length.
 - Distance to the next turn is measured along the road, not as a straight line.
 
 ### Known issues
+- With the phone locked or another app in front, the banner, voice prompts and car screen freeze after about a minute, because Android's WebView stops running a hidden page. Location itself keeps arriving. The screen now stays on while navigating to avoid this in a cradle; moving navigation into the native service is the planned fix.
 - The 0.01 report button crash did not reproduce in five tap-out cycles on the phone. The report sheet and the report card still do not close when you tap the map.
 
 ## 0.01 (2026-10-29)

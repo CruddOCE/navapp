@@ -81,8 +81,9 @@ npm run android:install
 Once installed, the app needs nothing from the PC to navigate:
 
 - **Search and routing** go straight from the phone to Nominatim and OSRM over mobile data, using Capacitor's native HTTP so the app can send its identifying User-Agent (both services refuse requests without one).
-- **GPS keeps running with the screen locked** while a route is active. Starting a route starts a location service, shown as a "navapp is navigating" notification, and ending the route stops it. On first launch Android asks to allow notifications; allow it so the notification shows. GPS still works if you refuse.
-- **Crowd reports** need the report server on the PC. Away from it, the ! button says "Reports need the home server" instead of opening the report sheet.
+- **Location keeps coming in while a route is active**, even with another app in front or the screen locked. Starting a route starts a location service, shown as a "navapp is navigating" notification, and ending the route stops it. On first launch Android asks to allow notifications; allow it so the notification shows. GPS still works if you refuse.
+- **The screen stays on while navigating.** Navigation runs in the app's web page, and Android's WebView stops running a hidden page after about a minute: location keeps arriving, but the banner, voice prompts and car screen freeze until the app is back on screen (measured 2026-10-30). Keeping the screen on avoids that with the phone in a cradle. Locking the phone or switching to another app mid-route still freezes them, which also means Android Auto with a locked phone does not work yet. Moving navigation into the native location service is the planned fix.
+- **Crowd reports** need the report server on the PC. Away from it, the ! button says "Reports need the home server" instead of opening the report sheet. While navigating, messages like this show in the top banner for a few seconds.
 - **The map** still needs internet: MapLibre loads from a CDN and the map tiles come from OpenFreeMap.
 
 ## Configuration (env vars, server side)
