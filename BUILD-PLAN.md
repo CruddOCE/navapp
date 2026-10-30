@@ -29,7 +29,7 @@ A Waze-style navigation app for personal use first, Android first (Capacitor). P
 | Phone-to-server access (CORS) | Android | Allows only the Android app origin to call the server. Verified on phone. | None open. |
 | Release v0.01 and changelog | Platform | Published as a pre-release with the debug APK and CHANGELOG.md. | None open. |
 
-### Awaiting testing (19)
+### Awaiting testing (20)
 
 | Feature | Area | Notes | Open bugs |
 |---|---|---|---|
@@ -51,7 +51,8 @@ A Waze-style navigation app for personal use first, Android first (Capacitor). P
 | Live updates over WebSocket | Reports | New and changed reports pushed to open phones. Server tested; two-phone test not done. | Unverified across two phones. |
 | Android Auto car screen | Android | Navigation template screen; opens on Desktop Head Unit with no crash. Route on car not yet tested. | Car service allows every host in every build (see the host allowlist card). |
 | Route state from phone to car | Android | Next instruction and distance sent to car during navigation. Not yet tested with a live route. | Unverified with a live route. |
-| Works without the PC (standalone phone build) | Platform | The installed app navigates without the PC, adb or a debugging session. Search and routing go straight from the phone to Nominatim and OSRM over mobile data, through Capacitor's native HTTP with an identifying User-Agent. A location service keeps GPS running with the screen locked while a route is active. Only crowd reports still need the PC's report server; away from it, the ! button says so. Built and checked on 2026-10-30 with the PC server stopped: search, route and background location all worked on the phone. | Not yet tried on a real drive away from home. |
+| Works without the PC (standalone phone build) | Platform | The installed app navigates without the PC, adb or a debugging session. Search and routing go straight from the phone to Nominatim and OSRM over mobile data, through Capacitor's native HTTP with an identifying User-Agent. Navigation itself runs in the native location service, so it keeps going with another app in front or the phone locked (see the native navigation card). Only crowd reports still need the PC's report server; away from it, the ! button says so. Checked on 2026-10-30 with the PC server stopped: search and route worked, and ending the route stopped the service. | Not yet tried on a real drive away from home. |
+| Navigation keeps working with the phone locked | Navigation | In the Android app, navigation runs in the native location service instead of the web page: turn tracking, voice prompts (Android text-to-speech), car screen updates and rerouting. A hidden WebView page stops running after about a minute, so before this everything froze with the phone locked. The Java navigator and voice are copies of nav.js and voice.js, kept in step by a shared fixture of recorded drives that both test suites replay. Checked on 2026-10-31 with navapp behind the home screen for 3 minutes: the engine kept handling fixes, spoke its prompt and rerouted once, and the page caught up at once on return. | Not yet checked with the screen locked on a drive, or on the Desktop Head Unit (it connected but got no video). |
 
 ### Planned (7)
 
