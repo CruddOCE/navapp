@@ -29,7 +29,7 @@ A Waze-style navigation app for personal use first, Android first (Capacitor). P
 | Phone-to-server access (CORS) | Android | Allows only the Android app origin to call the server. Verified on phone. | None open. |
 | Release v0.01 and changelog | Platform | Published as a pre-release with the debug APK and CHANGELOG.md. | None open. |
 
-### Awaiting testing (18)
+### Awaiting testing (19)
 
 | Feature | Area | Notes | Open bugs |
 |---|---|---|---|
@@ -40,7 +40,7 @@ A Waze-style navigation app for personal use first, Android first (Capacitor). P
 | Reroute | Navigation | Recalculates from current position, at most every 10 s. Unit tested; not yet tested on a drive. | Unverified on the road. |
 | Arrival detection | Navigation | Stops navigation within 25 m of the destination. Unit tested; not yet tested on a drive. | Unverified on the road. |
 | Voice prompts | Navigation | Speaks at 400 m, 100 m and 20 m, once each. Since 2026-10-30 a turn is known by its instruction and position, not its step number, so after a reroute a new turn gets its full prompts and the same turn is not repeated. Unit tested; not yet heard on the phone. | Speech not yet confirmed on the phone. |
-| GPS watchdog | Location | Restarts the GPS watch after 20 s with no fix. Fixes arrive after restart; steady fixes outdoors not yet confirmed. Since 2026-10-30 the navigator copes with the position jump after a stall (see #33). | Indoors the phone gets one fix and then stalls. |
+| GPS watchdog | Location | Restarts the GPS watch after 20 s with no fix. Root cause of the stalls found 2026-10-30: the plugin used the 30 s timeout as the update interval, so fixes came every 30 s while the watchdog restarted the watch at 20 s, and error retries left old watches running. Now the watch asks for a fix every second, only one runs at a time, and only the watchdog restarts it. On the phone Android now registers the request at 1 s. Since 2026-10-30 the navigator also copes with the position jump after a stall (see #33). | Steady fixes outdoors and with the screen locked not yet confirmed on a drive. |
 | Report button | Reports | Orange ! button on the map. Visible on phone. On 2026-10-30, five tap-out cycles on the phone (open the sheet, tap the map) gave no crash and nothing fatal in logcat. | The original crash has not been reproduced. Tapping the map does not close the report sheet; only Cancel does. |
 | Report type picker | Reports | Five report types (police, crash, hazard, jam, closed). Built; not yet tested on phone. | Unverified on phone. |
 | Report pins on map | Reports | Coloured pins for each report. Server tested; phone not yet confirmed. | Unverified on phone. |
@@ -51,6 +51,7 @@ A Waze-style navigation app for personal use first, Android first (Capacitor). P
 | Live updates over WebSocket | Reports | New and changed reports pushed to open phones. Server tested; two-phone test not done. | Unverified across two phones. |
 | Android Auto car screen | Android | Navigation template screen; opens on Desktop Head Unit with no crash. Route on car not yet tested. | Car service allows every host in every build (see the host allowlist card). |
 | Route state from phone to car | Android | Next instruction and distance sent to car during navigation. Not yet tested with a live route. | Unverified with a live route. |
+| Works without the PC (standalone phone build) | Platform | The installed app navigates without the PC, adb or a debugging session. Search and routing go straight from the phone to Nominatim and OSRM over mobile data, through Capacitor's native HTTP with an identifying User-Agent. A location service keeps GPS running with the screen locked while a route is active. Only crowd reports still need the PC's report server; away from it, the ! button says so. Built and checked on 2026-10-30 with the PC server stopped: search, route and background location all worked on the phone. | Not yet tried on a real drive away from home. |
 
 ### Planned (7)
 
