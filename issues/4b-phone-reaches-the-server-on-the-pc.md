@@ -15,4 +15,4 @@ Steps:
 ## Status log
 
 - 2026-10-29: Built, awaiting test. Not verified yet, per owner. The build and install exist, so the check is awaiting test.
-- 2026-10-30: Confirmed. From the phone over Wi-Fi adb, `curl http://192.168.1.221:8090/api/geocode?q=Perth...` returned results (HTTP 200), and port 8090 was open from the phone. In the app, a search for Fremantle returned results from the PC server. No firewall change was needed.
+- 2026-10-30: Confirmed. From the phone over Wi-Fi adb, `curl http://<PC-IP>:8090/api/geocode?q=Perth...` returned results (HTTP 200), and port 8090 was open from the phone. In the app, a search for Fremantle returned results from the PC server. No firewall change was needed.
