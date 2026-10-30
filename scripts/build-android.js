@@ -93,8 +93,19 @@ function install() {
   run(`"${ADB}" -s "${serial}" shell monkey -p ${APP_ID} -c android.intent.category.LAUNCHER 1`);
 }
 
+// JVM unit tests for the Java navigator, voice and wording (android/app/src/test).
+// The first run downloads JUnit and Gson into the Gradle cache.
+function unitTests() {
+  checkTools();
+  fs.mkdirSync(SOCKET_DIR, { recursive: true });
+  run('"' + path.join(ANDROID, 'gradlew.bat') + '" testDebugUnitTest', ANDROID);
+  console.log('Java unit tests passed. Reports: android/app/build/reports/tests/testDebugUnitTest/index.html');
+}
+
 if (process.argv.includes('--install')) {
   install();
+} else if (process.argv.includes('--test')) {
+  unitTests();
 } else {
   build();
 }

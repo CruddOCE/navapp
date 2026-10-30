@@ -23,6 +23,18 @@ npm test
 
 Tests are hand-rolled (`test/run.js`) and use recorded fixtures, so they need no network. The server tests use an OS-picked port, so they never collide with the dev server.
 
+The Android app runs navigation in Java (see Layout), a copy of `web/js/nav.js`, `voice.js` and the instruction wording in `routing.js`. Its JVM tests replay the same recorded drives and must give the same answers:
+
+```bash
+npm run android:test
+```
+
+After changing `nav.js` or `voice.js`, regenerate the shared expectations and run both suites. `npm test` fails until the file is regenerated.
+
+```bash
+node scripts/make-nav-expectations.js
+```
+
 ## Build the Android test app
 
 The installed app does not need the PC, adb or anything else to navigate. Map, place search, routing and GPS all work on their own with mobile data. Only crowd reports need the PC, because the PC runs the shared report server for now.
@@ -81,8 +93,8 @@ npm run android:install
 Once installed, the app needs nothing from the PC to navigate:
 
 - **Search and routing** go straight from the phone to Nominatim and OSRM over mobile data, using Capacitor's native HTTP so the app can send its identifying User-Agent (both services refuse requests without one).
-- **Location keeps coming in while a route is active**, even with another app in front or the screen locked. Starting a route starts a location service, shown as a "navapp is navigating" notification, and ending the route stops it. On first launch Android asks to allow notifications; allow it so the notification shows. GPS still works if you refuse.
-- **The screen stays on while navigating.** Navigation runs in the app's web page, and Android's WebView stops running a hidden page after about a minute: location keeps arriving, but the banner, voice prompts and car screen freeze until the app is back on screen (measured 2026-10-30). Keeping the screen on avoids that with the phone in a cradle. Locking the phone or switching to another app mid-route still freezes them, which also means Android Auto with a locked phone does not work yet. Moving navigation into the native location service is the planned fix.
+- **Navigation keeps going with the phone locked or another app in front.** Starting a route starts a location service, shown as a "navapp is navigating" notification, which tracks the turns, speaks the prompts, updates the car screen and reroutes on its own. Ending the route stops it. The app's page only displays what the service sends, and catches up as soon as it is back on screen. On first launch Android asks to allow notifications; allow it so the notification shows. Navigation still works if you refuse.
+- **The screen stays on while navigating**, which is easier to follow with the phone in a cradle. It is no longer needed for navigation to work.
 - **Crowd reports** need the report server on the PC. Away from it, the ! button says "Reports need the home server" instead of opening the report sheet. While navigating, messages like this show in the top banner for a few seconds.
 - **The map** still needs internet: MapLibre loads from a CDN and the map tiles come from OpenFreeMap.
 
@@ -105,12 +117,13 @@ Build-side: `NAV_API_BASE` (see above).
 - `web/js/routing.js`: OSRM wrapper. Converts OSRM's `[lng, lat]` into `{lat, lng}`, keeps each step's duration for the ETA, and builds the instruction text for every OSRM manoeuvre type. Runs on the server and inside the Android app.
 - `web/js/api.js`: search and routing for the map. Direct to Nominatim and OSRM through native HTTP in the Android app, through the dev server in a browser.
 - `web/js/gps.js`: the Android GPS watch and its 20 s watchdog. Asks for a fix every second.
-- `web/js/nav.js`: navigator. Measures progress along the route line, so a GPS gap cannot leave the prompt on a passed turn. Reports the current step, distance to the next turn along the road, distance and time left, and off-route state. No network, no timers.
-- `web/js/voice.js`: spoken prompts at 400 m, 100 m and 20 m, once each per manoeuvre. A manoeuvre is known by its instruction and position, so prompts survive a reroute.
-- `web/js/map.js`: map screen, search, GPS and the navigation view. Reroutes at most once every 10 seconds.
+- `web/js/nav.js`: navigator. Measures progress along the route line, so a GPS gap cannot leave the prompt on a passed turn. Reports the current step, distance to the next turn along the road, distance and time left, and off-route state. No network, no timers. Used in a desktop browser; the Android app uses its Java copy.
+- `web/js/voice.js`: spoken prompts at 400 m, 100 m and 20 m, once each per manoeuvre. A manoeuvre is known by its instruction and position, so prompts survive a reroute. Browser only, like `nav.js`.
+- `web/js/map.js`: map screen, search, GPS and the navigation view. In the Android app it hands the route to the native service and displays its updates; in a browser it runs `nav.js` and `voice.js` itself and reroutes at most once every 10 seconds.
 - `web/js/config.js`: API base. Empty in the repo; the Android build sets it.
-- `android/`: Capacitor Android project. The location and notification permissions are in its manifest, and cleartext HTTP is allowed so the phone can reach the PC's report server. `NavLocationService.java` is the location service that keeps GPS running while a route is active; `car/` is the Android Auto screen.
-- `scripts/build-android.js`: builds the APK and installs it.
+- `android/`: Capacitor Android project. The location and notification permissions are in its manifest, and cleartext HTTP is allowed so the phone can reach the PC's report server. `NavLocationService.java` runs navigation while a route is active (GPS, turns, voice, car screen, rerouting). `nav/` holds the Java navigator, voice prompts, instruction wording and OSRM client it uses. `car/` is the Android Auto screen and `NavStatePlugin`, the page's link to the service. `adb shell dumpsys activity service com.example.navapp/.NavLocationService` shows the engine's fix count, last prompt and reroutes.
+- `scripts/make-nav-expectations.js`: writes `test/fixtures/nav-expected.json`, the recorded drives both the JavaScript and Java navigators are tested against.
+- `scripts/build-android.js`: builds the APK, installs it (`--install`) and runs the Java unit tests (`--test`).
 - `test/`: `run.js` runner, `*.test.js` suites, `fixtures/` for recorded responses and a GPS trace.
 
 ## Notes

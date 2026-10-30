@@ -11,7 +11,8 @@
     "start": "node server/index.js",
     "test": "node test/run.js",
     "android:build": "node scripts/build-android.js",
-    "android:install": "node scripts/build-android.js --install"
+    "android:install": "node scripts/build-android.js --install",
+    "android:test": "node scripts/build-android.js --test"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

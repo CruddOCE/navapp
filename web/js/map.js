@@ -217,11 +217,20 @@ function drawRoute(route) {
   );
 }
 
+// In the Android app, navigation runs in the native location service
+// (NavLocationService, through the NavState plugin): turn tracking, voice, the
+// car screen and rerouting all keep going there while this page is hidden,
+// which a hidden WebView page cannot do. This page then only shows what the
+// service sends. In a desktop browser the JavaScript navigator and voice below
+// do the work instead.
+const nativeNav =
+  window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()
+    ? window.Capacitor.Plugins.NavState
+    : null;
+
 function startNavigation() {
   if (!pendingRoute || !devicePosition) return;
-  navigator_ = createNavigator(pendingRoute);
   navigating = true;
-  lastRerouteAt = Date.now();
   searchInput.hidden = true;
   resultsList.hidden = true;
   startBtn.hidden = true;
@@ -230,31 +239,59 @@ function startNavigation() {
   navBottom.hidden = false;
   youMarker.getElement().classList.add('navigating');
   map.jumpTo({ center: [devicePosition.lng, devicePosition.lat], zoom: NAV_ZOOM, pitch: NAV_PITCH });
+  if (nativeNav) {
+    navStreet.textContent = 'Starting...';
+    nativeNav
+      .startRoute({ route: pendingRoute, destination: { lat: destination.lat, lng: destination.lng } })
+      .catch((err) => showMessage(err.message));
+    return;
+  }
+  navigator_ = createNavigator(pendingRoute);
+  lastRerouteAt = Date.now();
   followNavigation(devicePosition);
 }
 
-// Android Auto: the car screen reads the phone's navigation state through the
-// NavState plugin. In a browser the plugin does not exist and this does nothing.
-function carPlugin() {
-  return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NavState;
+// Banner, bottom bar and camera for one navigation update, from either the
+// JavaScript navigator or the native service.
+function showNavState(state, pos, heading) {
+  navDistance.textContent = formatMetres(state.distanceToNextM);
+  if (Date.now() >= bannerMessageUntil) navStreet.textContent = state.instruction;
+  navRemaining.textContent = `${formatMetres(state.remainingM)} left`;
+  // From what is left to drive, so the arrival time holds steady instead of
+  // sliding later with every fix.
+  const etaMs = Date.now() + state.remainingS * 1000;
+  navEta.textContent = new Date(etaMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Heading-up: turn the map to the direction of travel when the phone reports one.
+  const easeOptions = { center: [pos.lng, pos.lat], duration: 500 };
+  if (Number.isFinite(heading)) easeOptions.bearing = heading;
+  map.easeTo(easeOptions);
 }
 
-function sendCarState(state) {
-  const plugin = carPlugin();
-  if (!plugin) return;
-  plugin
-    .update({ active: true, instruction: state.instruction, distanceM: Math.round(state.distanceToNextM) })
-    .catch(() => {});
+function finishNavigation(arrived) {
+  stopNavigation();
+  if (arrived) setStatus('You have arrived.');
 }
 
-function clearCarState() {
-  const plugin = carPlugin();
-  if (!plugin) return;
-  plugin.update({ active: false, instruction: '', distanceM: 0 }).catch(() => {});
+if (nativeNav) {
+  nativeNav.addListener('navState', (state) => {
+    if (!navigating) return;
+    const pos = { lat: state.lat, lng: state.lng };
+    showYou(pos);
+    showNavState(state, pos, state.heading);
+  });
+  nativeNav.addListener('rerouted', ({ route }) => {
+    if (!navigating) return;
+    pendingRoute = route;
+    drawRoute(route);
+  });
+  nativeNav.addListener('message', ({ text }) => showMessage(text));
+  nativeNav.addListener('ended', ({ arrived }) => {
+    if (navigating) finishNavigation(arrived);
+  });
 }
 
 function stopNavigation() {
-  clearCarState();
+  if (nativeNav && navigating) nativeNav.stopRoute().catch(() => {});
   navigating = false;
   navigator_ = null;
   navBanner.hidden = true;
@@ -287,25 +324,14 @@ async function reroute() {
   }
 }
 
+// Browser only: the JavaScript navigator and voice, fed by the page's own GPS.
 function followNavigation(pos, heading) {
   if (!navigator_) return;
   const state = navigator_.update(pos);
-  navDistance.textContent = formatMetres(state.distanceToNextM);
-  if (Date.now() >= bannerMessageUntil) navStreet.textContent = state.instruction;
-  navRemaining.textContent = `${formatMetres(state.remainingM)} left`;
-  // From what is left to drive, so the arrival time holds steady instead of
-  // sliding later with every fix.
-  const etaMs = Date.now() + state.remainingS * 1000;
-  navEta.textContent = new Date(etaMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  showNavState(state, pos, heading);
   voice.onUpdate(state);
-  sendCarState(state);
-  // Heading-up: turn the map to the direction of travel when the phone reports one.
-  const easeOptions = { center: [pos.lng, pos.lat], duration: 500 };
-  if (Number.isFinite(heading)) easeOptions.bearing = heading;
-  map.easeTo(easeOptions);
   if (state.arrived) {
-    stopNavigation();
-    setStatus('You have arrived.');
+    finishNavigation(true);
     return;
   }
   if (state.offRoute && Date.now() - lastRerouteAt >= REROUTE_MIN_GAP_MS) reroute();

@@ -50,17 +50,29 @@ public class NavScreen extends Screen implements NavState.Listener {
         invalidate();
     }
 
+    // Whether the car has been told navigation is running, so it is told once at
+    // the start and once at the end (audit item: navigationEnded was never sent).
+    private boolean navigating = false;
+
     @NonNull
     @Override
     public Template onGetTemplate() {
+        NavigationManager manager = getCarContext().getCarService(NavigationManager.class);
         if (!NavState.isActive()) {
+            if (navigating) {
+                manager.navigationEnded();
+                navigating = false;
+            }
             return new MessageTemplate.Builder("Start a route on your phone to see directions here.")
                     .setTitle("navapp")
                     .setHeaderAction(Action.APP_ICON)
                     .build();
         }
 
-        getCarContext().getCarService(NavigationManager.class).navigationStarted();
+        if (!navigating) {
+            manager.navigationStarted();
+            navigating = true;
+        }
 
         Step step = new Step.Builder(NavState.getInstruction())
                 .setManeuver(new Maneuver.Builder(Maneuver.TYPE_UNKNOWN).build())
