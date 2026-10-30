@@ -1,6 +1,7 @@
 package com.example.navapp.car;
 
 import androidx.annotation.NonNull;
+import com.example.navapp.NavLocationService;
 import androidx.car.app.CarContext;
 import androidx.car.app.Screen;
 import androidx.car.app.model.Action;
@@ -33,6 +34,7 @@ public class NavScreen extends Screen implements NavState.Listener {
                     @Override
                     public void onStopNavigation() {
                         NavState.update(false, "", 0);
+                        NavLocationService.stop(carContext);
                     }
                 });
         getLifecycle().addObserver(new DefaultLifecycleObserver() {

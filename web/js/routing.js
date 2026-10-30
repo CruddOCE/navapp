@@ -85,6 +85,9 @@ function parseOsrmResponse(json) {
 function createRouter(options) {
   const fetchImpl = options.fetchImpl;
   const baseUrl = options.baseUrl;
+  // The public OSRM server refuses requests with no User-Agent or Android's
+  // default one (403), so the app identifies itself, as it does to Nominatim.
+  const headers = options.userAgent ? { 'User-Agent': options.userAgent } : {};
 
   async function getRoute({ from, to }) {
     if (from.lat === to.lat && from.lng === to.lng) {
@@ -92,7 +95,7 @@ function createRouter(options) {
     }
     const coords = `${from.lng},${from.lat};${to.lng},${to.lat}`;
     const url = `${baseUrl}/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=true`;
-    const res = await fetchImpl(url);
+    const res = await fetchImpl(url, { headers });
     if (!res.ok) throw new Error(`routing service returned ${res.status}`);
     return parseOsrmResponse(await res.json());
   }
@@ -100,4 +103,6 @@ function createRouter(options) {
   return { getRoute };
 }
 
-module.exports = { createRouter, parseOsrmResponse, instructionFor };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { createRouter, parseOsrmResponse, instructionFor };
+}

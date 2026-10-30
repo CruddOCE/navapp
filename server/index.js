@@ -8,8 +8,8 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const express = require('express');
-const { createGeocoder } = require('./src/geocode');
-const { createRouter } = require('./src/routing');
+const { createGeocoder } = require('../web/js/geocode');
+const { createRouter } = require('../web/js/routing');
 const { createReportStore } = require('./src/reports');
 const { attachLive } = require('./src/live');
 
@@ -128,15 +128,17 @@ function createApp(deps) {
 function defaultDeps() {
   const dbFile = process.env.REPORTS_DB || path.join(__dirname, '..', 'data', 'reports.db');
   fs.mkdirSync(path.dirname(dbFile), { recursive: true });
+  const userAgent = process.env.USER_AGENT || 'navapp/dev (placeholder contact)';
   return {
     geocoder: createGeocoder({
       fetchImpl: fetch,
       baseUrl: process.env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org',
-      userAgent: process.env.USER_AGENT || 'navapp/dev (placeholder contact)',
+      userAgent,
     }),
     router: createRouter({
       fetchImpl: fetch,
       baseUrl: process.env.OSRM_URL || 'https://router.project-osrm.org',
+      userAgent,
     }),
     reports: createReportStore({ path: dbFile }),
   };

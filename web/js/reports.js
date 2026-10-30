@@ -42,9 +42,18 @@ function markerElement(report) {
   return el;
 }
 
+// The live channel retries from 5 s, doubling to a minute, so a phone away from
+// the report server is not reconnecting every few seconds all drive.
+const LIVE_RETRY_MIN_MS = 5000;
+const LIVE_RETRY_MAX_MS = 60000;
+
 function createReports(map, options) {
   const markers = new Map();
   let selectedId = null;
+  // Reports need the shared report server (the PC for now). null until the
+  // first load answers or fails.
+  let reachable = null;
+  let liveRetryMs = LIVE_RETRY_MIN_MS;
 
   function upsert(report) {
     const existing = markers.get(report.id);
@@ -75,11 +84,13 @@ function createReports(map, options) {
     });
     try {
       const res = await fetch(`${window.NAV_API_BASE || ''}/api/reports?${qs}`);
+      reachable = true;
       if (!res.ok) return;
       const { reports } = await res.json();
       for (const r of reports) upsert(r);
     } catch (err) {
-      // Offline: keep whatever is already on the map.
+      // Server out of reach: keep whatever is already on the map.
+      reachable = false;
     }
   }
 
@@ -110,21 +121,28 @@ function createReports(map, options) {
     });
   }
 
-  // Live updates. If the connection drops, retry in 5 seconds.
+  // Live updates. If the connection drops, retry with a growing gap.
   function connectLive() {
     const socket = new WebSocket(`${wsBase()}/live`);
+    socket.addEventListener('open', () => {
+      liveRetryMs = LIVE_RETRY_MIN_MS;
+      reachable = true;
+    });
     socket.addEventListener('message', (event) => {
       const msg = JSON.parse(event.data);
       if (msg.type === 'report') upsert(msg.report);
     });
-    socket.addEventListener('close', () => setTimeout(connectLive, 5000));
+    socket.addEventListener('close', () => {
+      setTimeout(connectLive, liveRetryMs);
+      liveRetryMs = Math.min(liveRetryMs * 2, LIVE_RETRY_MAX_MS);
+    });
   }
 
   map.on('moveend', loadInView);
   loadInView();
   connectLive();
 
-  return { create, vote, loadInView, REPORT_TYPES };
+  return { create, vote, loadInView, REPORT_TYPES, isReachable: () => reachable !== false };
 }
 
 if (typeof module !== 'undefined' && module.exports) {

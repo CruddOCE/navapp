@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { createGeocoder, boundingBox, NEARBY_RADIUS_KM } = require('../server/src/geocode');
+const { createGeocoder, boundingBox, NEARBY_RADIUS_KM } = require('../web/js/geocode');
 
 // Returns the same rows for every call, and records each URL asked for.
 function fakeFetch(rows, calls) {

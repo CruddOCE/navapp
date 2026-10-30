@@ -8,7 +8,13 @@
 - Fork, merge, on and off ramps, end of road, roundabout exits and U-turns each get their own wording, instead of "Continue on". Roundabouts say which exit. Unnamed roads use their route number.
 - After a reroute, a new turn gets its full voice prompts, and the same turn is not announced twice.
 
+- GPS no longer stalls. The app asked for a fix only every 30 s (the plugin uses the timeout as the update interval) while a 20 s watchdog restarted the watch, and error retries left old watches running. Now it asks every second, keeps one watch, and only the watchdog restarts it.
+- GPS keeps working with the screen locked or another app in front while a route is active, through a location service with a "navapp is navigating" notification.
+- Routing no longer fails with 403 from the OSRM demo server, which refuses Android's default User-Agent.
+
 ### Changed
+- The app works without the PC: search and routing go straight from the phone to Nominatim and OSRM over mobile data. Only crowd reports still need the PC's server; away from it, the ! button says "Reports need the home server".
+- Android 13 and later asks to allow notifications on first launch, for the navigation notification.
 - The bottom bar shows the distance left ("12.1 km left") instead of the total route length.
 - Distance to the next turn is measured along the road, not as a straight line.
 

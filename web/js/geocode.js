@@ -1,7 +1,10 @@
-// Proxy for place search. The browser never calls Nominatim directly, because
-// Nominatim's usage policy requires an identifying User-Agent and at most one
-// request per second, and both are easy to break from many clients.
-// The cache keeps repeated searches from using up that one-per-second budget.
+// Place search against Nominatim. Nominatim's usage policy requires an
+// identifying User-Agent and at most one request per second. The cache keeps
+// repeated searches from using up that one-per-second budget.
+//
+// The same file runs in two places: on the dev server, as the proxy a desktop
+// browser calls (a browser cannot set User-Agent), and inside the Android app,
+// which calls Nominatim itself through native HTTP so it works away from the PC.
 //
 // A search returns two lists. "nearby" holds places inside NEARBY_RADIUS_KM of
 // the device. "further" holds everything else Nominatim finds anywhere in the
@@ -70,4 +73,6 @@ function createGeocoder(options) {
   return { search };
 }
 
-module.exports = { createGeocoder, boundingBox, NEARBY_RADIUS_KM };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { createGeocoder, boundingBox, NEARBY_RADIUS_KM };
+}

@@ -88,50 +88,28 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 
 const onLocationError = () => setStatus('Location unavailable. Search still works.');
 
-// A GPS fix can take well over the plugin's default 10 seconds indoors, so the
-// timeout is 30. The plugin also closes the watch after an error, so restart it.
-const LOCATION_TIMEOUT_MS = 30000;
-const RESTART_WATCH_MS = 5000;
-
 // In the Android app, the Capacitor Geolocation plugin asks for the location
-// permission and then reports fixes. In a normal browser, use the standard API.
+// permission and then reports fixes (watch and watchdog in gps.js). In a
+// normal browser, use the standard API.
 const nativeGeo = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
 
-// The native watch can go quiet after a fix without reporting an error, so a
-// watchdog restarts it when no fix has arrived for STALL_MS.
-const STALL_MS = 20000;
-let lastFixAt = 0;
-let nativeWatchId = null;
+const nativeWatch = nativeGeo
+  ? createNativeWatch({
+      plugin: nativeGeo,
+      onFix: (coords) => {
+        if (statusLine.textContent.startsWith('Finding your location')) setStatus('');
+        onPosition(coords);
+      },
+      onWaiting: () => setStatus('Finding your location...'),
+    })
+  : null;
 
-function startNativeWatch() {
-  if (nativeWatchId !== null) nativeGeo.clearWatch({ id: nativeWatchId });
-  lastFixAt = Date.now();
-  nativeWatchId = nativeGeo.watchPosition(
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: LOCATION_TIMEOUT_MS },
-      (pos, err) => {
-        if (err || !pos) {
-          setStatus("Finding your location...");
-          setTimeout(startNativeWatch, RESTART_WATCH_MS);
-          return;
-        }
-        lastFixAt = Date.now();
-        if (statusLine.textContent.startsWith("Finding your location")) setStatus("");
-        onPosition(pos.coords);
-      }
-    );
-}
-
-setInterval(() => {
-  if (nativeGeo && Date.now() - lastFixAt > STALL_MS) {
-    setStatus("Finding your location...");
-    startNativeWatch();
-  }
-}, 5000);
+if (nativeWatch) setInterval(nativeWatch.tick, 5000);
 
 async function startLocation() {
-  if (nativeGeo) {
+  if (nativeWatch) {
     await nativeGeo.requestPermissions();
-    startNativeWatch();
+    nativeWatch.start();
     return;
   }
   if ('geolocation' in navigator) {
@@ -367,10 +345,19 @@ function postReport(type) {
   reports
     .create(type, devicePosition)
     .then(() => setStatus('Report posted. Thanks!'))
-    .catch((err) => setStatus(err.message));
+    // fetch throws a TypeError when the server cannot be reached at all.
+    .catch((err) => setStatus(err instanceof TypeError ? REPORTS_OFFLINE : err.message));
 }
 
+// Reports live on the shared report server, which is the PC for now. Away from
+// it, say so instead of opening a sheet whose buttons would all fail.
+const REPORTS_OFFLINE = 'Reports need the home server. Search and routes still work.';
+
 document.getElementById('report-btn').addEventListener('click', () => {
+  if (!reports.isReachable()) {
+    setStatus(REPORTS_OFFLINE);
+    return;
+  }
   reportSheet.hidden = false;
 });
 document.getElementById('report-cancel').addEventListener('click', () => {
