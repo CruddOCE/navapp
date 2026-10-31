@@ -7,3 +7,5 @@ android/build/
 android/local.properties
 *.apk
 data/
+# Copied from node_modules by scripts/copy-vendor.js
+web/vendor/

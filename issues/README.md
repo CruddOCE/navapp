@@ -8,6 +8,7 @@ status, the "Done when" test and the steps, plus a dated status log.
 - **To come**: not built yet.
 - **Built, awaiting test**: the code exists, but the check in "Done when" has not been run on the phone or road.
 - **Tested and confirmed**: the "Done when" check has passed. Record the date in the status log.
+- **Built**: written and compiled, but not yet checked on the phone or car at all.
 - **Blocked, needs approval**: planned, but the owner must approve it first.
 
 Update a file's `Status:` line and add a log entry in the same commit as the change.
@@ -34,6 +35,14 @@ Update a file's `Status:` line and add a log entry in the same commit as the cha
 | 4a-2 | Host check allows all hosts only in debug builds | Blocked, needs approval | [4a-2-host-check-allows-all-hosts-only-in-debug-builds.md](4a-2-host-check-allows-all-hosts-only-in-debug-builds.md) |
 | N1 | Works without the PC | Built, awaiting test | [n1-works-without-the-pc.md](n1-works-without-the-pc.md) |
 | N2 | Navigation keeps working with the phone locked | Built, awaiting test | [n2-navigation-with-the-phone-locked.md](n2-navigation-with-the-phone-locked.md) |
+| N3 | Map on the car screen | Built, awaiting test | [n3-map-on-the-car-screen.md](n3-map-on-the-car-screen.md) |
+| N4 | Car map always on | Built, awaiting test | [n4-car-map-always-on.md](n4-car-map-always-on.md) |
+| N5 | Your position on the car map at all times | Built, awaiting test | [n5-position-on-the-car-map-at-all-times.md](n5-position-on-the-car-map-at-all-times.md) |
+| N6 | Car map appears instantly | Built, awaiting test | [n6-car-map-appears-instantly.md](n6-car-map-appears-instantly.md) |
+| N7 | Bundled map library | Built, awaiting test | [n7-bundled-map-library.md](n7-bundled-map-library.md) |
+| N8 | Car map pan and pinch zoom | Built | [n8-car-map-pan-and-pinch-zoom.md](n8-car-map-pan-and-pinch-zoom.md) |
+| N9 | Car map zoom buttons and recenter | Built, awaiting test | [n9-car-map-zoom-buttons-and-recenter.md](n9-car-map-zoom-buttons-and-recenter.md) |
+| N10 | Your position stays on the car screen | Built, awaiting test | [n10-position-stays-on-the-car-screen.md](n10-position-stays-on-the-car-screen.md) |
 | R1 | HTTPS API instead of the Wi-Fi IP | To come | [r1-https-api-instead-of-the-wi-fi-ip.md](r1-https-api-instead-of-the-wi-fi-ip.md) |
 | R2 | Self-hosted routing and geocoding (OSRM and Nominatim) | To come | [r2-self-hosted-routing-and-geocoding-osrm-and-nominatim.md](r2-self-hosted-routing-and-geocoding-osrm-and-nominatim.md) |
 | R3 | Google's Android Auto review | To come | [r3-google-s-android-auto-review.md](r3-google-s-android-auto-review.md) |

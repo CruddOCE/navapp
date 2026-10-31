@@ -8,6 +8,7 @@
     "node": ">=22.5"
   },
   "scripts": {
+    "prestart": "node scripts/copy-vendor.js",
     "start": "node server/index.js",
     "test": "node test/run.js",
     "android:build": "node scripts/build-android.js",
@@ -22,6 +23,7 @@
     "ws": "8.22.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.5.3"
+    "@capacitor/cli": "8.5.3",
+    "maplibre-gl": "5.24.0"
   }
 }

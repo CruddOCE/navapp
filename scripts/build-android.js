@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { copyVendor } = require('./copy-vendor');
 
 const ROOT = path.join(__dirname, '..');
 const ANDROID = path.join(ROOT, 'android');
@@ -63,6 +64,8 @@ function build() {
     fs.writeFileSync(CONFIG, original.replace("window.NAV_API_BASE = '';", "window.NAV_API_BASE = '" + apiBase + "';"));
     console.log('API base for this build: ' + apiBase);
   }
+  // MapLibre is bundled from node_modules (see copy-vendor.js) before Capacitor copies web/.
+  console.log('vendor: ' + copyVendor().join(', '));
   try {
     run('npx cap sync android');
     run('"' + path.join(ANDROID, 'gradlew.bat') + '" assembleDebug', ANDROID);

@@ -59,6 +59,8 @@ public class NavLocationService extends Service {
     private static final int NOTIFICATION_ID = 1;
     private static final long FIX_INTERVAL_MS = 1000;
     private static final long REROUTE_MIN_GAP_MS = 10000;
+    // A last-known position younger than this starts navigation before the first live fix.
+    private static final long RECENT_FIX_MS = 120000;
     // Long enough for "You have arrived" to finish before the service goes.
     private static final long END_AFTER_ARRIVAL_MS = 4000;
 
@@ -116,7 +118,9 @@ public class NavLocationService extends Service {
         int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION : 0;
         ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(), type);
         try {
-            navigator = new Navigator(RouteJson.toRoute(new JSONObject(pendingRouteJson)));
+            JSONObject routeJson = new JSONObject(pendingRouteJson);
+            navigator = new Navigator(RouteJson.toRoute(routeJson));
+            NavState.setRoute(routeJson.getJSONArray("geometry").toString());
         } catch (JSONException | RuntimeException e) {
             Log.w(TAG, "bad route from the page", e);
             stopSelf();
@@ -151,6 +155,11 @@ public class NavLocationService extends Service {
         // The fused provider (Android 12+) blends GPS, Wi-Fi and motion sensors.
         String provider = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? LocationManager.FUSED_PROVIDER : LocationManager.GPS_PROVIDER;
         locations.requestLocationUpdates(provider, FIX_INTERVAL_MS, 0, onFix, Looper.getMainLooper());
+        // The first live fix can take seconds (indoors, about 10), and the car only
+        // shows the route once navigation has a position. A recent last-known
+        // position gives it one at once; live fixes take over as they arrive.
+        Location last = locations.getLastKnownLocation(provider);
+        if (last != null && System.currentTimeMillis() - last.getTime() < RECENT_FIX_MS) onLocation(last);
     }
 
     private void onLocation(Location fix) {
@@ -163,6 +172,7 @@ public class NavLocationService extends Service {
         voice.onUpdate(s);
         NavRoute.Step next = navigator.step(s.stepIndex);
         String side = TurnTypes.drivingSide(networkCountry, next.drivingSide);
+        NavState.setPosition(lastLat, lastLng, fix.hasBearing() ? fix.getBearing() : Double.NaN);
         NavState.update(!s.arrived, s.instruction, (int) Math.round(s.distanceToNextM), TurnTypes.of(next, side), next.exit);
         lastState = toJson(s, fix);
         Listener l = listener;
@@ -197,6 +207,11 @@ public class NavLocationService extends Service {
                     if (ended) return;
                     navigator = new Navigator(route);
                     reroutes++;
+                    try {
+                        NavState.setRoute(json.getJSONArray("geometry").toString());
+                    } catch (JSONException e) {
+                        // RouteJson.toRoute already read the same geometry, so this cannot fail.
+                    }
                     Listener l = listener;
                     if (l != null) {
                         l.onRerouted(json);
@@ -241,6 +256,7 @@ public class NavLocationService extends Service {
         main.removeCallbacksAndMessages(null);
         network.shutdownNow();
         if (speaker != null) speaker.shutdown();
+        NavState.setRoute("[]");
         NavState.update(false, "", 0);
         lastState = null;
         Listener l = listener;

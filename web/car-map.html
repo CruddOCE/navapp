@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>navapp car map</title>
+  <!-- The map behind the turn card on the Android Auto car screen. Loaded by
+       car/CarMapRenderer.java into a WebView on the car's surface; it has no
+       controls of its own and is driven through window.carMap. -->
+  <link rel="stylesheet" href="vendor/maplibre-gl.css">
+  <style>
+    html, body { margin: 0; height: 100%; background: #f6f7f5; overflow: hidden; }
+    #map { position: fixed; inset: 0; }
+    /* Hidden on the car screen: the host draws its own controls and attribution
+       would sit under the turn card. Attribution is shown on the phone's map. */
+    .maplibregl-ctrl-bottom-right, .maplibregl-ctrl-bottom-left { display: none; }
+    .car-arrow { width: 44px; height: 44px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="vendor/maplibre-gl.js"></script>
+  <script src="js/map-style.js"></script>
+  <script src="js/car-map.js"></script>
+</body>
+</html>

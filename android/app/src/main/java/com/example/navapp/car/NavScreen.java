@@ -6,16 +6,19 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.example.navapp.NavLocationService;
 import com.example.navapp.R;
 import com.example.navapp.nav.TurnTypes;
+import androidx.car.app.AppManager;
 import androidx.car.app.CarContext;
 import androidx.car.app.Screen;
 import androidx.car.app.model.Action;
 import androidx.car.app.model.ActionStrip;
 import androidx.car.app.model.Distance;
-import androidx.car.app.model.MessageTemplate;
+import androidx.car.app.CarToast;
+import androidx.car.app.model.OnClickListener;
 import androidx.car.app.model.Template;
 import androidx.car.app.navigation.NavigationManager;
 import androidx.car.app.navigation.NavigationManagerCallback;
 import androidx.car.app.navigation.model.Maneuver;
+import androidx.car.app.navigation.model.MessageInfo;
 import androidx.car.app.navigation.model.NavigationTemplate;
 import androidx.car.app.navigation.model.RoutingInfo;
 import androidx.car.app.navigation.model.Step;
@@ -23,13 +26,20 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
-// The car screen. It shows the phone's next instruction and distance using
-// Google's navigation template, which is the only layout a navigation app may
-// show while driving. Without a route it shows a message instead.
+// The car screen. It always uses Google's navigation template, the only layout a
+// navigation app may show while driving, so the map (CarMapRenderer) is there
+// from the moment navapp opens on the car. During a route it shows the turn
+// card; before one, a short message over the map. Map buttons pan, zoom and
+// recenter.
 public class NavScreen extends Screen implements NavState.Listener {
+
+    // Draws the map behind the turn card on the car's surface.
+    private final CarMapRenderer map;
 
     public NavScreen(@NonNull CarContext carContext) {
         super(carContext);
+        map = new CarMapRenderer(carContext, following -> invalidate());
+        carContext.getCarService(AppManager.class).setSurfaceCallback(map);
         NavState.addListener(this);
         // Navigation must have a callback before navigationStarted() can be called,
         // or Android throws "No callback has been set" and the app crashes.
@@ -46,12 +56,15 @@ public class NavScreen extends Screen implements NavState.Listener {
             @Override
             public void onDestroy(@NonNull LifecycleOwner owner) {
                 NavState.removeListener(NavScreen.this);
+                getCarContext().getCarService(AppManager.class).setSurfaceCallback(null);
+                map.destroy();
             }
         });
     }
 
     @Override
     public void onChanged() {
+        map.onNavChanged();
         invalidate();
     }
 
@@ -68,9 +81,23 @@ public class NavScreen extends Screen implements NavState.Listener {
                 manager.navigationEnded();
                 navigating = false;
             }
-            return new MessageTemplate.Builder("Start a route on your phone to see directions here.")
-                    .setTitle("navapp")
-                    .setHeaderAction(Action.APP_ICON)
+            // The template needs an action strip even with no route; this one only
+            // says where routes start.
+            ActionStrip idle = new ActionStrip.Builder()
+                    .addAction(new Action.Builder()
+                            .setTitle("Start on phone")
+                            .setOnClickListener(() -> CarToast.makeText(getCarContext(),
+                                    "Pick a destination on your phone.", CarToast.LENGTH_LONG).show())
+                            .build())
+                    .build();
+            return new NavigationTemplate.Builder()
+                    // The car shows only a short title here; longer text goes under it.
+                    .setNavigationInfo(new MessageInfo.Builder("No route yet")
+                            .setText("Start one on your phone.")
+                            .build())
+                    .setActionStrip(idle)
+                    .setMapActionStrip(mapActions())
+                    .setPanModeListener(panning -> { })
                     .build();
         }
 
@@ -106,6 +133,26 @@ public class NavScreen extends Screen implements NavState.Listener {
         return new NavigationTemplate.Builder()
                 .setNavigationInfo(routing)
                 .setActionStrip(actions)
+                .setMapActionStrip(mapActions())
+                .setPanModeListener(panning -> { })
+                .build();
+    }
+
+    // Pan (Android Auto's own button, which turns on drag), zoom in and out, and
+    // Recenter while the map is not following you.
+    private ActionStrip mapActions() {
+        ActionStrip.Builder b = new ActionStrip.Builder()
+                .addAction(Action.PAN)
+                .addAction(iconAction(R.drawable.map_zoom_in, () -> map.zoomStep(1)))
+                .addAction(iconAction(R.drawable.map_zoom_out, () -> map.zoomStep(-1)));
+        if (!map.isFollowing()) b.addAction(iconAction(R.drawable.map_recenter, map::recenter));
+        return b.build();
+    }
+
+    private Action iconAction(int icon, OnClickListener onClick) {
+        return new Action.Builder()
+                .setIcon(new CarIcon.Builder(IconCompat.createWithResource(getCarContext(), icon)).build())
+                .setOnClickListener(onClick)
                 .build();
     }
 

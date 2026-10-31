@@ -18,7 +18,46 @@ public final class NavState {
     // Android Auto Maneuver type and roundabout exit for the turn card (TurnTypes).
     private static volatile int turnType = 0;
     private static volatile int exitNumber = 0;
+    // For the car screen's map (CarMapRenderer): the route line as a JSON array
+    // of [lat, lng] pairs, and the latest fix. Heading is NaN when unknown.
+    private static volatile String routeJson = null;
+    private static volatile boolean hasPosition = false;
+    private static volatile double lat = 0;
+    private static volatile double lng = 0;
+    private static volatile double heading = Double.NaN;
     private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
+
+    public static String getRouteJson() {
+        return routeJson;
+    }
+
+    public static boolean hasPosition() {
+        return hasPosition;
+    }
+
+    public static double getLat() {
+        return lat;
+    }
+
+    public static double getLng() {
+        return lng;
+    }
+
+    public static double getHeading() {
+        return heading;
+    }
+
+    // Set before update(), which tells the listeners.
+    public static void setRoute(String geometryJson) {
+        routeJson = geometryJson;
+    }
+
+    public static void setPosition(double latitude, double longitude, double bearing) {
+        lat = latitude;
+        lng = longitude;
+        heading = bearing;
+        hasPosition = true;
+    }
 
     private NavState() {}
 

@@ -62,6 +62,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android Auto navigation screen. -->
     <uses-permission android:name="androidx.car.app.NAVIGATION_TEMPLATES" />
+    <!-- Drawing the map on the car screen's surface (car/CarMapRenderer.java). -->
+    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
     <!-- Turn-by-turn needs the precise fix; the Geolocation plugin asks at runtime. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
